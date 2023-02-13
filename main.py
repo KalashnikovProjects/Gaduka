@@ -1,16 +1,16 @@
-# This is a sample Python script.
+import compiler
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+code = ["повтор 7 раз:",
+        "    разделить строку: строка='1 2 3 4 5', переменная=але",
+        "    добавить текст: текст=але, текст1=номер_повтора"]
+a = compiler.compile_code(code=code)
+print("----Гадюка код----")
+print("\n".join(code))
+print("\n" * 2)
 
+print("----Питон код----")
+print("\n".join(a))
+print("\n" * 2)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+print("----Результат----")
+exec("\n".join(a))
