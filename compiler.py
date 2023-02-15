@@ -1,25 +1,38 @@
 import re
+
 """
-Для определения типа строки (выполнение функции, задание значения переменной, запуск цикла)
+Для определения типа строки (выполнение функции, задание значения переменной, запуск цикла и т.д.)
 используются регулярные выражения
 """
-
 
 PASS_COMMAND = 'заглушка'
 LINE_BREAK_CHARACTER = "-"
 COMMENT_CHARACTER = "#"
-PROHIBITION_WORDS = ('eval', "exec", "pillow", "os", "sys")
+PROHIBITION_WORDS = ('eval', "exec", "pillow", "os", "sys", "Image", 'exit')
+print_logs = False
 
 
-class ProhibitionWordError(Exception):
+class GadukaException(Exception):
+    ...
+
+
+class ProhibitionWordError(GadukaException):
     pass
 
 
-class LineBreakError(Exception):
+class LineBreakError(GadukaException):
     pass
 
 
-class CompileStringError(Exception):
+class CompileStringError(GadukaException):
+    pass
+
+
+class FuncNotExist(GadukaException):
+    pass
+
+
+class ArgError(GadukaException):
     pass
 
 
@@ -27,6 +40,7 @@ class ToPythonCommands:
     """
     Базовые функции
     """
+
     @staticmethod
     def list_append(kwargs):
         return f'{kwargs["список"]}.append({kwargs["элемент"]})'
@@ -68,6 +82,7 @@ class ToPythonCommands:
     """
     Функции вставки объектов на изображение
     """
+
     @staticmethod
     def paste_text_to_image(kwargs):
         ...
@@ -91,17 +106,20 @@ class ToPythonCommands:
     """
     Функции обработки изображений
     """
+
     @staticmethod
     def image_crop(kwargs):
-        ...
+        return f'{kwargs["изображение"]} = {kwargs["изображение"]}.crop((' \
+                    f'{kwargs["левая_граница"]}, {kwargs["верхняя_граница"]},' \
+                    f'{kwargs["правая_граница"]}, {kwargs["нижняя_граница"]}))'
 
     @staticmethod
     def image_resize(kwargs):
-        ...
+        return f'{kwargs["изображение"]} = {kwargs["изображение"]}.reduce({kwargs["коэффициент"]})'
 
     @staticmethod
     def image_rotate(kwargs):
-        ...
+        return f'{kwargs["изображение"]} = {kwargs["изображение"]}.rotate({kwargs["поворот"]}, expand=True)'
 
     @staticmethod
     def image_transpose(kwargs):
@@ -114,6 +132,7 @@ class ToPythonCommands:
     """
     Функции нейросети
     """
+
     @staticmethod
     def generate_text(kwargs):
         ...
@@ -125,16 +144,18 @@ class ToPythonCommands:
     """
     Другие функции
     """
+
     @staticmethod
     def add_text(kwargs):
-        # Типа print, только для тг бота и сайта
-        return f"print(str({kwargs['текст']}) + ' ' + str({kwargs['текст1']}))"
-        ...
+        if print_logs:
+            return f"""print({', '.join([str(i) for i in list(kwargs.values())])})"""
+        else:
+            return ...
 
     @staticmethod
     def add_image(kwargs):
         # Добавить картинку к результату
-        ...
+        return f"итоговые_изображения.append({kwargs['изображение']})"
 
 
 COMMANDS = {
@@ -152,17 +173,17 @@ COMMANDS = {
     "наложить стрелку": ToPythonCommands.paste_arrow_to_image,
     "наложить многоугольник": ToPythonCommands.paste_shape_to_image,
 
-    "обрезать картинку": ToPythonCommands.image_crop,
-    "сжать картинку": ToPythonCommands.image_resize,
-    "повернуть картинку": ToPythonCommands.image_rotate,
-    "отразить картинку": ToPythonCommands.image_transpose,
+    "обрезать изображение": ToPythonCommands.image_crop,
+    "сжать изображение": ToPythonCommands.image_resize,
+    "повернуть изображение": ToPythonCommands.image_rotate,
+    "отразить изображение": ToPythonCommands.image_transpose,
     "наложить эффект": ToPythonCommands.image_effect,
 
     "сгенерировать текст": ToPythonCommands.generate_text,
     "изучить текст": ToPythonCommands.learn_text,
 
     "добавить текст": ToPythonCommands.add_text,
-    "добавить картинку": ToPythonCommands.add_image,
+    "добавить изображение": ToPythonCommands.add_image,
 }
 
 
@@ -172,18 +193,25 @@ def pre_code() -> list:
                  'левый_нижний_угол': (0.05, 0.95),
                  'правый_нижний_угол': (0.95, 0.95),
                  'Верно': True,
-                 'Неверно': False}
+                 'Неверно': False,
+                 "итоговые_изображения": []}
 
     commands = [f"{var} = {value}" for var, value in constants.items()]
+    commands.append("from PIL import Image")
     commands.append("")
     return commands
 
 
-def compile_code(code: list, **kwargs) -> list:
+def compile_code(code: list, pre_code_py_commands: list = (), post_code_py_commands: list = (),
+                 logs=False) -> list:
+    global print_logs
+    print_logs = logs
+
     # Принимает список строк кода на Гадюке
-    # Возвращает также но на Питоне (потом выполняется через exec())
+    # Возвращает код на Питоне (потом выполняется через exec())
     full_line: str = ''
-    compiled_code: list = pre_code(**kwargs)
+    compiled_code: list = pre_code()
+    compiled_code.extend(pre_code_py_commands)
     spaces_count = 0
 
     for line_num, line in enumerate(code):
@@ -215,6 +243,7 @@ def compile_code(code: list, **kwargs) -> list:
         raise LineBreakError("Ошибка: Последняя строка вашего кода заканчивается символом переноса строки"
                              "Возможно вы случайно поставили лишний символ или незакончили свой код.")
 
+    compiled_code.extend(post_code_py_commands)
     return compiled_code
 
 
@@ -224,7 +253,7 @@ def compile_line(line: str, line_num=0) -> str:
     # заменяет строки в ковычках на text,
     # что бы игнорировать то что написано в ковычках
 
-    if line == PASS_COMMAND or not(line):
+    if line == PASS_COMMAND or not (line):
         return "pass"
 
     for i in PROHIBITION_WORDS:
@@ -232,30 +261,30 @@ def compile_line(line: str, line_num=0) -> str:
             raise ProhibitionWordError(f"Ошибка в строке номер {line_num}: {line} \n"
                                        f"Некоторые названия нельзя использовать в своей программе:\n" +
                                        ", ".join(PROHIBITION_WORDS) + "\n"
-                                       f"В вашей программе используется название {i}")
+                                                                      f"В вашей программе используется название '{i}'.")
 
-    if re.fullmatch("повтор \S+ раз:", structure_finder):
+    if re.fullmatch("повтор .+ раз:", structure_finder):
         """ 
         цикл for
         """
         count = line.lstrip("повтор ").rstrip(" раз:")
         return f"for номер_повтора in range({count}):"
 
-    elif re.fullmatch("повтор пока \S+:", structure_finder):
+    elif re.fullmatch("повтор пока .+:", structure_finder):
         """ 
         цикл while
         """
         condition = line.lstrip("повтор пока ").rstrip(":")
 
         return f"while {condition}:"
-    elif re.fullmatch("если \S+:", structure_finder):
+    elif re.fullmatch("если .+:", structure_finder):
         """ 
         условие if 
         """
         condition = line.lstrip("если ").rstrip(":")
         return f"if {condition}:"
 
-    elif re.fullmatch("иначе если \S+:", structure_finder):
+    elif re.fullmatch("иначе если .+:", structure_finder):
         """ 
         условие elif 
         """
@@ -268,7 +297,7 @@ def compile_line(line: str, line_num=0) -> str:
         """
         return "else:"
 
-    elif re.fullmatch("[\w\[\].]+.\w+\(\S*\)", structure_finder):
+    elif re.fullmatch("[\w\[\].]+.\w+(\(.*\))?", structure_finder):
         """
         вызывание функции у переменной
         например
@@ -276,7 +305,7 @@ def compile_line(line: str, line_num=0) -> str:
         """
         return get_func(line, line_num)
 
-    elif re.fullmatch("(\w ?)+: (\w+ *= *\S+,? *)+", structure_finder):
+    elif re.fullmatch("(\w ?)+: (\w+ *= *[\S ]+,? *)+", structure_finder):
         """
         выполнение команды
         например
@@ -284,7 +313,7 @@ def compile_line(line: str, line_num=0) -> str:
         """
         return get_command(line, line_num)
 
-    elif re.fullmatch("[\w\[\]]+ *[!+-/*%><]{1,2}= *\S+", structure_finder):
+    elif re.fullmatch("[\w\[\]]+ *[!+-/*%><]{1,2}= *.+", structure_finder):
         """
         задание / изменение переменной
         например
@@ -294,7 +323,7 @@ def compile_line(line: str, line_num=0) -> str:
         return line
     else:
         raise CompileStringError(f"Ошибка в строке номер {line_num}: {line} \n"
-                                 f"В оформлении строки есть ошибка")
+                                 f"В оформлении строки есть ошибка.")
 
 
 def get_func(gaduka_command: str, line_num) -> str:
@@ -304,7 +333,15 @@ def get_func(gaduka_command: str, line_num) -> str:
 def get_command(gaduka_command: str, line_num) -> str:
     if len(gaduka_command.split(":")) != 2:
         raise CompileStringError(f"Ошибка в строке номер {line_num}: {gaduka_command} \n"
-                                 f"В оформлении строки есть ошибка")
+                                 f"В оформлении строки есть ошибка.")
     command, args = gaduka_command.split(":")
     kwargs = {i.split("=")[0].strip(): i.split("=")[1].strip() for i in args.split(",")}
-    return COMMANDS[command](kwargs)
+    if command not in COMMANDS:
+        raise FuncNotExist(f"Ошибка в строке номер {line_num}: {gaduka_command} \n"
+                           f"Команды с именем '{command}' не существует.")
+    try:
+        result = COMMANDS[command](kwargs)
+    except KeyError as e:
+        raise ArgError(f"Ошибка в строке номер {line_num}: {gaduka_command} \n"
+                       f"Вы не передали аргумент {e} в команду '{command}'.")
+    return result
