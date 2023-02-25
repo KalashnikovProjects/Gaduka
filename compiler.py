@@ -8,12 +8,70 @@ import re
 PASS_COMMAND = 'заглушка'
 LINE_BREAK_CHARACTER = "-"
 COMMENT_CHARACTER = "#"
-PROHIBITION_WORDS = ('eval', "exec", "pillow", "os", "sys", "Image", 'exit')
-print_logs = False
+PROHIBITION_WORDS = ('eval', "exec", "pillow", "os", "sys", "Image", 'exit', "import", "from", "ImageDraw", "ImageFont",
+                     'compiler_data')
+
+TYPES = {"list": "список", "str": "строка", "int": "число", "bool": "логический",
+         "dict": "список", "tuple": "неизменяемый список", "set": "множество",
+         "function": "функция", "float": "число"}
+
+
+class GadukaStr(str):
+    def __new__(cls, *args, **kwargs):
+        args = list(args)
+        for index, want_to_be_string in enumerate(args):
+            if isinstance(want_to_be_string, bool):
+                args[index] = "Верно" if want_to_be_string else "Неверно"
+            else:
+                args[index] = str(want_to_be_string)
+        return cls.__new__(str, " ".join(args))
+
+
+def gaduka_type(obj):
+    types_to_ru = {
+        str: "Строка",
+        int: "Число",
+        dict: "Словарь",
+        float: "Десятичная дробь",
+        set: "Множество",
+        list: "Список",
+        tuple: "Неизменяемый список",
+        enumerate: "Пронумерованный список",
+        range: "Диапазон"}
+
+    if callable(obj):
+        return "Функция"
+    return types_to_ru.get(type(obj), f"Объект класса {obj.__class__}")
+
+
+def get_exec_funcs():
+    return {
+        "__builtins__": {"__import__": __import__},
+        "range": range,
+        "модуль": abs,
+        "все": all,
+        "любой": any,
+        "словарь": dict,
+        "пронумеровать": enumerate,
+        "десятичная_дробь": float,
+        "число": int,
+        "длинна": len,
+        "список": list,
+        "наибольшее_значение": max,
+        "наименьшее_значение": min,
+        "корень": pow,
+        "округлить": round,
+        "множество": set,
+        "отсортировать": sorted,
+        "строка": GadukaStr,
+        "сумма": sum,
+        "кортеж": tuple,
+        "тип": gaduka_type,
+    }
 
 
 class GadukaException(Exception):
-    ...
+    pass
 
 
 class ProhibitionWordError(GadukaException):
@@ -85,23 +143,124 @@ class ToPythonCommands:
 
     @staticmethod
     def paste_text_to_image(kwargs):
-        ...
+        if "цвет" not in kwargs:
+            kwargs["цвет"] = '"black"'
+
+        return f"""
+        class compiler_data: pass
+        compiler_data.draw = ImageDraw.Draw({kwargs['куда']})
+        compiler_data.font = ImageFont.truetype("arial.ttf", 50, encoding='UTF-8')
+        compiler_data.w, compiler_data.h = compiler_data.draw.textsize({kwargs['текст']}, font=compiler_data.font)
+        compiler_data.place = list({kwargs['где']})
+        compiler_data.place[0] = compiler_data.place[0] * {kwargs['куда']}.width - compiler_data.w // 2
+        compiler_data.place[1] = compiler_data.place[1] * {kwargs['куда']}.height - compiler_data.h // 2
+        compiler_data.draw.text(compiler_data.place, {kwargs['текст']}, fill={kwargs["цвет"]}, 
+        font=compiler_data.font)\n
+        """
 
     @staticmethod
     def paste_image_to_image(kwargs):
-        ...
+        return f"""
+        class compiler_data: pass
+        compiler_data.background = {kwargs['куда']}
+        compiler_data.img = {kwargs['какую']}
+        compiler_data.w, compiler_data.h = compiler_data.img.size
+        compiler_data.place = list({kwargs['где']})
+        compiler_data.place[0] = int(compiler_data.place[0] * {kwargs['куда']}.width - compiler_data.w // 2)
+        compiler_data.place[1] = int(compiler_data.place[1] * {kwargs['куда']}.height - compiler_data.h // 2)
+        compiler_data.background.paste(compiler_data.img, compiler_data.place, compiler_data.img)\n
+        """
 
     @staticmethod
     def paste_line_to_image(kwargs):
-        ...
+        if "цвет" not in kwargs:
+            kwargs["цвет"] = '"black"'
+        if "ширина" not in kwargs:
+            kwargs["ширина"] = '2'
+
+        return f"""
+        class compiler_data: pass
+        compiler_data.draw = ImageDraw.Draw({kwargs['куда']})
+        compiler_data.li = []
+        for compiler_data.i in {kwargs['точки']}:
+            compiler_data.i = list(compiler_data.i)
+            compiler_data.i[0] = compiler_data.i[0] * {kwargs['куда']}.width
+            compiler_data.i[1] = compiler_data.i[1] * {kwargs['куда']}.height
+            compiler_data.li.append(tuple(compiler_data.i))
+        compiler_data.draw.line(compiler_data.li, fill={kwargs["цвет"]}, width={kwargs["ширина"]})\n
+        """
 
     @staticmethod
-    def paste_arrow_to_image(kwargs):
-        ...
+    def paste_circle_to_image(kwargs):
+        if "ширина_обводки" not in kwargs:
+            kwargs["ширина_обводки"] = '2'
+        if "цвет" not in kwargs and "обводка" not in kwargs:
+            a = f'outline="black"'
+        elif "цвет" not in kwargs:
+            a = f'outline={kwargs["обводка"]}'
+        elif "обводка" not in kwargs:
+            a = f'fill={kwargs["цвет"]}'
+        else:
+            a = f'fill={kwargs["цвет"]}, outline={kwargs["обводка"]}'
+
+        return f"""class compiler_data: pass
+        compiler_data.draw = ImageDraw.Draw({kwargs['куда']})
+        compiler_data.rad = {kwargs['радиус']}
+        compiler_data.li = (({kwargs['центр']}[0] - {kwargs['радиус']}) * {kwargs['куда']}.width,
+                                ({kwargs['центр']}[1] - {kwargs['радиус']}) * {kwargs['куда']}.height,
+                                ({kwargs['центр']}[0] + {kwargs['радиус']}) * {kwargs['куда']}.width,
+                                ({kwargs['центр']}[1] + {kwargs['радиус']}) * {kwargs['куда']}.height,)
+                                
+        compiler_data.draw.ellipse(compiler_data.li, {a}, width={kwargs["ширина_обводки"]})\n
+        """
 
     @staticmethod
     def paste_shape_to_image(kwargs):
-        ...
+        if "ширина_обводки" not in kwargs:
+            kwargs["ширина_обводки"] = '2'
+        if "цвет" not in kwargs and "обводка" not in kwargs:
+            a = f'outline="black"'
+        elif "цвет" not in kwargs:
+            a = f'outline={kwargs["обводка"]}'
+        elif "обводка" not in kwargs:
+            a = f'fill={kwargs["цвет"]}'
+        else:
+            a = f'fill={kwargs["цвет"]}, outline={kwargs["обводка"]}'
+
+        return f"""
+        class compiler_data: pass
+        compiler_data.draw = ImageDraw.Draw({kwargs['куда']})
+        compiler_data.li = []
+        for compiler_data.i in {kwargs['углы']}:
+            compiler_data.i = list(compiler_data.i)
+            compiler_data.i[0] = compiler_data.i[0] * {kwargs['куда']}.width
+            compiler_data.i[1] = compiler_data.i[1] * {kwargs['куда']}.height
+            compiler_data.li.append(tuple(compiler_data.i))
+        compiler_data.draw.polygon(compiler_data.li, {a}, width={kwargs["ширина_обводки"]})\n
+        """
+
+    @staticmethod
+    def paste_rect_to_image(kwargs):
+        if "ширина_обводки" not in kwargs:
+            kwargs["ширина_обводки"] = '2'
+        if "цвет" not in kwargs and "обводка" not in kwargs:
+            a = f'outline="black"'
+        elif "цвет" not in kwargs:
+            a = f'outline={kwargs["обводка"]}'
+        elif "обводка" not in kwargs:
+            a = f'fill={kwargs["цвет"]}'
+        else:
+            a = f'fill={kwargs["цвет"]}, outline={kwargs["обводка"]}'
+
+        return f"""class compiler_data: pass
+        compiler_data.draw = ImageDraw.Draw({kwargs['куда']})
+        compiler_data.li = ({kwargs['где']}[0] * {kwargs['куда']}.width,
+                                {kwargs['где']}[1] * {kwargs['куда']}.height,
+                                ({kwargs['где']}[0] + {kwargs['ширина']}) * {kwargs['куда']}.width,
+                                ({kwargs['где']}[1] + {kwargs['высота']}) * {kwargs['куда']}.height,)
+
+        compiler_data.draw.rectangle(compiler_data.li, {a}, width={kwargs["ширина_обводки"]})\n
+        """
 
     """
     Функции обработки изображений
@@ -110,8 +269,8 @@ class ToPythonCommands:
     @staticmethod
     def image_crop(kwargs):
         return f'{kwargs["изображение"]} = {kwargs["изображение"]}.crop((' \
-                    f'{kwargs["левая_граница"]}, {kwargs["верхняя_граница"]},' \
-                    f'{kwargs["правая_граница"]}, {kwargs["нижняя_граница"]}))'
+               f'{kwargs["левая_граница"]}, {kwargs["верхняя_граница"]},' \
+               f'{kwargs["правая_граница"]}, {kwargs["нижняя_граница"]}))'
 
     @staticmethod
     def image_resize(kwargs):
@@ -123,7 +282,16 @@ class ToPythonCommands:
 
     @staticmethod
     def image_transpose(kwargs):
-        ...
+        if kwargs.get("по_горизонтали", False) and kwargs.get("по_вертикали", False):
+            return f'{kwargs["изображение"]} = {kwargs["изображение"]}.transpose(Image.FLIP_LEFT_RIGHT)\n' \
+                   f'{kwargs["изображение"]} = {kwargs["изображение"]}.transpose(Image.FLIP_TOP_BOTTOM)'
+
+        elif kwargs.get("по_горизонтали", False):
+            return f'{kwargs["изображение"]} = {kwargs["изображение"]}.transpose(Image.FLIP_LEFT_RIGHT)\n'
+        elif kwargs.get("по_вертикали", False):
+            return f'{kwargs["изображение"]} = {kwargs["изображение"]}.transpose(Image.FLIP_TOP_BOTTOM)\n'
+        else:
+            return "pass"
 
     @staticmethod
     def image_effect(kwargs):
@@ -131,6 +299,7 @@ class ToPythonCommands:
 
     """
     Функции нейросети
+    неуверен будут ли
     """
 
     @staticmethod
@@ -147,10 +316,8 @@ class ToPythonCommands:
 
     @staticmethod
     def add_text(kwargs):
-        if print_logs:
-            return f"""print({', '.join([str(i) for i in list(kwargs.values())])})"""
-        else:
-            return ...
+        text = f"строка({', '.join([str(i) for i in list(kwargs.values())])})"
+        return f"""итоговый_текст.append({text})"""
 
     @staticmethod
     def add_image(kwargs):
@@ -170,8 +337,10 @@ COMMANDS = {
     "наложить текст": ToPythonCommands.paste_text_to_image,
     "наложить картинку": ToPythonCommands.paste_image_to_image,
     "наложить линию": ToPythonCommands.paste_line_to_image,
-    "наложить стрелку": ToPythonCommands.paste_arrow_to_image,
     "наложить многоугольник": ToPythonCommands.paste_shape_to_image,
+    "наложить прямоугольник": ToPythonCommands.paste_rect_to_image,
+    "наложить круг": ToPythonCommands.paste_circle_to_image,
+    # "наложить стрелку": ToPythonCommands.paste_arrow_to_image,
 
     "обрезать изображение": ToPythonCommands.image_crop,
     "сжать изображение": ToPythonCommands.image_resize,
@@ -188,30 +357,38 @@ COMMANDS = {
 
 
 def pre_code() -> list:
-    constants = {'левый_верхний_угол': (0.05, 0.05),
-                 'правый_верхний_угол': (0.95, 0.05),
-                 'левый_нижний_угол': (0.05, 0.95),
-                 'правый_нижний_угол': (0.95, 0.95),
-                 'Верно': True,
-                 'Неверно': False,
-                 "итоговые_изображения": []}
+    gaduka_pre_code_vars = {'левый_верхний_угол': (0.05, 0.05),
+                            'правый_верхний_угол': (0.95, 0.05),
+                            'левый_нижний_угол': (0.05, 0.95),
+                            'правый_нижний_угол': (0.95, 0.95),
+                            'по_центру': (0.5, 0.5),
 
-    commands = [f"{var} = {value}" for var, value in constants.items()]
-    commands.append("from PIL import Image")
-    commands.append("")
+                            'Верно': True,
+                            'Неверно': False,
+
+                            "чёрный": "'black'",
+                            "белый": "'white'",
+                            "красный": "'red'",
+                            "серый": "'gray'",
+                            "оранжевый": "'orange'",
+                            "жёлтый": "'yellow'",
+                            "зелёный": "'green'",
+                            "синий": "'blue'",
+                            "розовый": "'pink'",
+                            "фиолетовый": "'violet'"}
+
+    commands = ["from PIL import Image, ImageDraw, ImageFont", ""]
+    commands.extend([f"{var} = {value}" for var, value in gaduka_pre_code_vars.items()])
     return commands
 
 
-def compile_code(code: list, pre_code_py_commands: list = (), post_code_py_commands: list = (),
-                 logs=False) -> list:
-    global print_logs
-    print_logs = logs
-
+def compile_code(code: list, pre_code_py_commands: list = (), post_code_py_commands: list = ()) -> list:
     # Принимает список строк кода на Гадюке
     # Возвращает код на Питоне (потом выполняется через exec())
     full_line: str = ''
     compiled_code: list = pre_code()
     compiled_code.extend(pre_code_py_commands)
+    compiled_to_not_compiled_match: dict = {}
     spaces_count = 0
 
     for line_num, line in enumerate(code):
@@ -236,7 +413,9 @@ def compile_code(code: list, pre_code_py_commands: list = (), post_code_py_comma
 
         if not line.endswith(LINE_BREAK_CHARACTER):
             # Строка закончена,
-            compiled_code.append(" " * spaces_count + compile_line(line, line_num=line_num))
+            compil = compile_line(line, line_num=line_num)
+            compiled_to_not_compiled_match[compil] = line_num
+            compiled_code.append(" " * spaces_count + compil)
             full_line = ''
 
     if full_line:
@@ -244,7 +423,7 @@ def compile_code(code: list, pre_code_py_commands: list = (), post_code_py_comma
                              "Возможно вы случайно поставили лишний символ или незакончили свой код.")
 
     compiled_code.extend(post_code_py_commands)
-    return compiled_code
+    return compiled_code, compiled_to_not_compiled_match
 
 
 def compile_line(line: str, line_num=0) -> str:
@@ -258,7 +437,7 @@ def compile_line(line: str, line_num=0) -> str:
 
     for i in PROHIBITION_WORDS:
         if re.search(f"\W{i}\W", "%" + structure_finder + "%"):
-            raise ProhibitionWordError(f"Ошибка в строке номер {line_num}: {line} \n"
+            raise ProhibitionWordError(f"Ошибка в строке номер {line_num}: \n{line} \n"
                                        f"Некоторые названия нельзя использовать в своей программе:\n" +
                                        ", ".join(PROHIBITION_WORDS) + "\n"
                                                                       f"В вашей программе используется название '{i}'.")
@@ -297,7 +476,7 @@ def compile_line(line: str, line_num=0) -> str:
         """
         return "else:"
 
-    elif re.fullmatch("[\w\[\].]+.\w+(\(.*\))?", structure_finder):
+    elif re.fullmatch("[\w\[\].]+.\w+(?:\(.*\))?", structure_finder):
         """
         вызывание функции у переменной
         например
@@ -305,7 +484,7 @@ def compile_line(line: str, line_num=0) -> str:
         """
         return get_func(line, line_num)
 
-    elif re.fullmatch("(\w ?)+: (\w+ *= *[\S ]+,? *)+", structure_finder):
+    elif re.fullmatch("(\w ?)+: (?:\w+ *= *[\S ]+,? *)+", structure_finder):
         """
         выполнение команды
         например
@@ -313,7 +492,7 @@ def compile_line(line: str, line_num=0) -> str:
         """
         return get_command(line, line_num)
 
-    elif re.fullmatch("[\w\[\]]+ *[!+-/*%><]{1,2}= *.+", structure_finder):
+    elif re.fullmatch("[\w\[\]]+ *[!+-/*%><]{0,2}= *.+", structure_finder):
         """
         задание / изменение переменной
         например
@@ -322,26 +501,57 @@ def compile_line(line: str, line_num=0) -> str:
         """
         return line
     else:
-        raise CompileStringError(f"Ошибка в строке номер {line_num}: {line} \n"
+        raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{line} \n"
                                  f"В оформлении строки есть ошибка.")
 
 
 def get_func(gaduka_command: str, line_num) -> str:
-    return "аргумент или функция"
+    return "#аргумент или функция, в разработке"
 
 
 def get_command(gaduka_command: str, line_num) -> str:
     if len(gaduka_command.split(":")) != 2:
-        raise CompileStringError(f"Ошибка в строке номер {line_num}: {gaduka_command} \n"
+        raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
                                  f"В оформлении строки есть ошибка.")
     command, args = gaduka_command.split(":")
-    kwargs = {i.split("=")[0].strip(): i.split("=")[1].strip() for i in args.split(",")}
+
+    kwargs = {}
+    brackets_count = 0
+    open_brackets = """({["""
+    closed_brackets = """)]}"""
+    quote_count = None
+    a = ""
+    for i in args:
+        if i == "," and brackets_count == 0 and not quote_count:
+            if "=" in a:
+                kwargs[a.split("=")[0].strip()] = a.split("=")[1].strip()
+            else:
+                kwargs[a.strip()] = True
+            a = ""
+        else:
+            a += i
+
+        if not quote_count and i in open_brackets:
+            brackets_count += 1
+        elif not quote_count and i in closed_brackets:
+            brackets_count -= 1
+        elif i == '"' or i == "'":
+            if quote_count == i:
+                quote_count = None
+            elif quote_count is None:
+                quote_count = i
+    if "=" in a:
+        kwargs[a.split("=")[0].strip()] = a.split("=")[1].strip()
+    else:
+        kwargs[a.strip()] = True
+    # kwargs = {i.split("=")[0].strip(): i.split("=")[1].strip() for i in args.split(", ")}
+
     if command not in COMMANDS:
-        raise FuncNotExist(f"Ошибка в строке номер {line_num}: {gaduka_command} \n"
+        raise FuncNotExist(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
                            f"Команды с именем '{command}' не существует.")
     try:
         result = COMMANDS[command](kwargs)
     except KeyError as e:
-        raise ArgError(f"Ошибка в строке номер {line_num}: {gaduka_command} \n"
+        raise ArgError(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
                        f"Вы не передали аргумент {e} в команду '{command}'.")
     return result
