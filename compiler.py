@@ -1,4 +1,7 @@
 import re
+from copy import copy
+
+from PIL import Image
 
 """
 Для определения типа строки (выполнение функции, задание значения переменной, запуск цикла и т.д.)
@@ -8,12 +11,13 @@ import re
 PASS_COMMAND = 'заглушка'
 LINE_BREAK_CHARACTER = "-"
 COMMENT_CHARACTER = "#"
-PROHIBITION_WORDS = ('eval', "exec", "pillow", "os", "sys", "Image", 'exit', "import", "from", "ImageDraw", "ImageFont",
-                     'compiler_data')
+PROHIBITION_WORDS = ('eval', "exec", "PIL", "os", "sys", "Image", 'exit', "import",
+                     "ImageDraw", "ImageFont", 'compiler_data', 'ImageFilter', "del",
+                     "return", "assert", "nonlocal", "global", "super", 'quit', 'raise')
 
 TYPES = {"list": "список", "str": "строка", "int": "число", "bool": "логический",
          "dict": "список", "tuple": "неизменяемый список", "set": "множество",
-         "function": "функция", "float": "число"}
+         "function": "функция", "float": "число", "NoneType": 'ничего'}
 
 
 class GadukaStr(str):
@@ -25,6 +29,34 @@ class GadukaStr(str):
             else:
                 args[index] = str(want_to_be_string)
         return cls.__new__(str, " ".join(args))
+
+
+class GadukaImage(Image.Image):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __getattribute__(self, item):
+        custom_attrs = {"размер": "size",
+                        "ширина": 'width',
+                        "высота": 'height'}
+
+        if item in custom_attrs:
+            return super().__getattribute__(custom_attrs[item])
+        attr = super().__getattribute__(item)
+        if item not in ('__getstate__', "getpalette", 'tobytes', '__class__', "__setstate__", 'frombytes', "copy") and \
+                callable(attr):
+            if item in ("crop", "reduce", "_open", "load", "_new", "convert", 'rotate'
+                                                                              "copy", "paste", "_ensure_mutable",
+                        "filter", "transpose",
+                        "__reduce_ex__"):
+                return attr
+            else:
+                raise AttributeError(item)
+        else:
+            return attr
+
+    def __copy__(self):
+        return super().copy()
 
 
 def gaduka_type(obj):
@@ -47,7 +79,7 @@ def gaduka_type(obj):
 def get_exec_funcs():
     return {
         "__builtins__": {"__import__": __import__},
-        "range": range,
+        "диапазон": range,
         "модуль": abs,
         "все": all,
         "любой": any,
@@ -67,6 +99,7 @@ def get_exec_funcs():
         "сумма": sum,
         "кортеж": tuple,
         "тип": gaduka_type,
+        "изображение": GadukaImage
     }
 
 
@@ -294,12 +327,26 @@ class ToPythonCommands:
             return "pass"
 
     @staticmethod
-    def image_effect(kwargs):
-        ...
+    def image_effects(kwargs):
+        filters = {"блюр": f'{kwargs["изображение"]} = {kwargs["изображение"]}.filter(ImageFilter.BLUR)',
+                   "выпуклость": f'{kwargs["изображение"]} = {kwargs["изображение"]}.filter(ImageFilter.EMBOSS)',
+                   "серость": f'{kwargs["изображение"]} = {kwargs["изображение"]}.convert("L")',
+                   "границы": f'''class compiler_data: pass
+        {kwargs["изображение"]} = {kwargs["изображение"]}.filter(ImageFilter.BLUR)
+        '''}
+
+        a = []
+        for i in kwargs.keys():
+            if i in filters:
+                a.append(filters[i])
+
+        if not a:
+            return "pass"
+        return ";".join(a)
 
     """
     Функции нейросети
-    неуверен будут ли
+    отменены
     """
 
     @staticmethod
@@ -346,10 +393,10 @@ COMMANDS = {
     "сжать изображение": ToPythonCommands.image_resize,
     "повернуть изображение": ToPythonCommands.image_rotate,
     "отразить изображение": ToPythonCommands.image_transpose,
-    "наложить эффект": ToPythonCommands.image_effect,
+    "наложить эффект": ToPythonCommands.image_effects,
 
-    "сгенерировать текст": ToPythonCommands.generate_text,
-    "изучить текст": ToPythonCommands.learn_text,
+    # "сгенерировать текст": ToPythonCommands.generate_text,
+    # "изучить текст": ToPythonCommands.learn_text,
 
     "добавить текст": ToPythonCommands.add_text,
     "добавить изображение": ToPythonCommands.add_image,
@@ -377,12 +424,13 @@ def pre_code() -> list:
                             "розовый": "'pink'",
                             "фиолетовый": "'violet'"}
 
-    commands = ["from PIL import Image, ImageDraw, ImageFont", ""]
+    commands = ["from PIL import Image, ImageDraw, ImageFont, ImageFilter",
+                "from copy import copy as копия"]
     commands.extend([f"{var} = {value}" for var, value in gaduka_pre_code_vars.items()])
     return commands
 
 
-def compile_code(code: list, pre_code_py_commands: list = (), post_code_py_commands: list = ()) -> list:
+def compile_code(code: list, pre_code_py_commands: list = ()) -> tuple[list, dict]:
     # Принимает список строк кода на Гадюке
     # Возвращает код на Питоне (потом выполняется через exec())
     full_line: str = ''
@@ -390,7 +438,7 @@ def compile_code(code: list, pre_code_py_commands: list = (), post_code_py_comma
     compiled_code.extend(pre_code_py_commands)
     compiled_to_not_compiled_match: dict = {}
     spaces_count = 0
-
+    line_break_count = 0
     for line_num, line in enumerate(code):
         # Обрабатываем пробелы в строке
         line = line.replace("\t", "    ")
@@ -409,20 +457,29 @@ def compile_code(code: list, pre_code_py_commands: list = (), post_code_py_comma
                                  f"Строка номер {line_num - 1} заканчивается на символ переноса строки\n"
                                  f"Но следующая строка, строка номер {line_num}, не начинается с него.")
 
-        full_line += line.strip(LINE_BREAK_CHARACTER) + " "
+        full_line += line.strip(LINE_BREAK_CHARACTER)
 
         if not line.endswith(LINE_BREAK_CHARACTER):
-            # Строка закончена,
-            compil = compile_line(line, line_num=line_num)
-            compiled_to_not_compiled_match[compil] = line_num
-            compiled_code.append(" " * spaces_count + compil)
+            # Строка закончена
+            compil = compile_line(full_line, line_num=line_num - line_break_count)
+            multistring = compil.split("\n")
+            flag = True
+            for mult_str in multistring:
+                compiled_to_not_compiled_match[mult_str] = line_num - line_break_count
+                if flag:
+                    compiled_code.append(" " * spaces_count + mult_str)
+                    flag = False
+                else:
+                    compiled_code.append(mult_str)
+            line_break_count = 0
             full_line = ''
+        else:
+            line_break_count += 1
 
     if full_line:
         raise LineBreakError("Ошибка: Последняя строка вашего кода заканчивается символом переноса строки"
                              "Возможно вы случайно поставили лишний символ или незакончили свой код.")
 
-    compiled_code.extend(post_code_py_commands)
     return compiled_code, compiled_to_not_compiled_match
 
 
@@ -435,39 +492,42 @@ def compile_line(line: str, line_num=0) -> str:
     if line == PASS_COMMAND or not (line):
         return "pass"
 
+    """
+    Проверка на содержание технических названий в коде
+    """
     for i in PROHIBITION_WORDS:
         if re.search(f"\W{i}\W", "%" + structure_finder + "%"):
             raise ProhibitionWordError(f"Ошибка в строке номер {line_num}: \n{line} \n"
                                        f"Некоторые названия нельзя использовать в своей программе:\n" +
                                        ", ".join(PROHIBITION_WORDS) + "\n"
-                                                                      f"В вашей программе используется название '{i}'.")
+                                       f"В вашей программе используется название '{i}'.")
 
     if re.fullmatch("повтор .+ раз:", structure_finder):
         """ 
         цикл for
         """
-        count = line.lstrip("повтор ").rstrip(" раз:")
-        return f"for номер_повтора in range({count}):"
+        count = line.removeprefix("повтор ").rstrip(" раз:")
+        return f"for номер_повтора in диапазон({count}):"
 
     elif re.fullmatch("повтор пока .+:", structure_finder):
         """ 
         цикл while
         """
-        condition = line.lstrip("повтор пока ").rstrip(":")
+        condition = line.removeprefix("повтор пока ").rstrip(":")
 
         return f"while {condition}:"
     elif re.fullmatch("если .+:", structure_finder):
         """ 
         условие if 
         """
-        condition = line.lstrip("если ").rstrip(":")
+        condition = line.removeprefix("если ").rstrip(":")
         return f"if {condition}:"
 
     elif re.fullmatch("иначе если .+:", structure_finder):
         """ 
         условие elif 
         """
-        condition = line.lstrip("иначе если ").rstrip(":")
+        condition = line.removeprefix("иначе если ").rstrip(":")
         return f"elif {condition}:"
 
     elif re.fullmatch("иначе:", structure_finder):
@@ -476,15 +536,16 @@ def compile_line(line: str, line_num=0) -> str:
         """
         return "else:"
 
-    elif re.fullmatch("[\w\[\].]+.\w+(?:\(.*\))?", structure_finder):
+    elif re.fullmatch("(?:[\w\[\].]*\.)*\w+\(.*\)", structure_finder):
         """
         вызывание функции у переменной
         например
         список.добавить(123)
+        print()
         """
-        return get_func(line, line_num)
+        return line
 
-    elif re.fullmatch("(\w ?)+: (?:\w+ *= *[\S ]+,? *)+", structure_finder):
+    elif re.fullmatch("(\w ?)+: (?:\w+ *=? *[\S ]+,? *)+", structure_finder):
         """
         выполнение команды
         например
@@ -506,7 +567,8 @@ def compile_line(line: str, line_num=0) -> str:
 
 
 def get_func(gaduka_command: str, line_num) -> str:
-    return "#аргумент или функция, в разработке"
+    raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
+                             f"В гадюке нет функционала вызова функции у объекта")
 
 
 def get_command(gaduka_command: str, line_num) -> str:

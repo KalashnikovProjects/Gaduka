@@ -1,30 +1,51 @@
+import queue
 import shutil
 import os
 import re
+import time
 
 import compiler
 import traceback as tr
+from multiprocessing import Process, Queue
+from PIL import Image
 
 
 def run_from_api(code, images, output):
     ...
 
 
-def compile_and_run_and_get_result(code, pre_code, post_code):
+def compile_and_run_and_get_result(code, images, process_connect):
+
+    imgs = []
+    for img_name in images:
+        img_opened = Image.open(img_name)
+        img_opened.load()
+        imgs.append(img_opened)
+
+    pilimage = Image.Image
+    Image.Image = compiler.GadukaImage
+
     compiled_code, match_not_compile, result_imgs, result_text = "", {}, [], []
 
     try:
-        compiled_code, match_not_compile = compiler.compile_code(code=code,
-                                                                 pre_code_py_commands=pre_code,
-                                                                 post_code_py_commands=post_code)
+        compiled_code, match_not_compile = compiler.compile_code(code=code)
 
         result_imgs, result_text = [], []
-        exec("\n".join(compiled_code), {"итоговые_изображения": result_imgs, "итоговый_текст": result_text},
+        exec("\n".join(compiled_code), {"итоговые_изображения": result_imgs, "итоговый_текст": result_text,
+                                        "изображения": imgs},
              compiler.get_exec_funcs())
         result_text = "\n".join(result_text)
+        a = []
+        for i in result_imgs:
+            i.__class__ = pilimage
+            a.append(i.copy())
+        result_imgs = a
+        process_connect.put((result_imgs, result_text, compiled_code))
         return result_imgs, result_text, compiled_code
     except Exception as e:
-        return result_imgs, process_exception(e, compiled_code, match_not_compile, code), compiled_code
+        a = ([], process_exception(e, compiled_code, match_not_compile, code), compiled_code)
+        process_connect.put(a)
+        return a
 
 
 def run_from_console(code, images=()):
@@ -32,19 +53,37 @@ def run_from_console(code, images=()):
         shutil.rmtree("result_files")
     os.makedirs("result_files")
 
-    pre_code_lines = [f"image_paths = {images}",
-                      "изображения = []",
-                      "for img_name in image_paths:",
-                      "    img_opened = Image.open(img_name)",
-                      "    img_opened.load()",
-                      "    изображения.append(img_opened)",
-                      "del img_opened, image_paths, img_name", "", ]
-    post_code_lines = ["",
-                       "for num, img_opened in пронумеровать(итоговые_изображения):",
-                       "   img_opened.save(f'result_files/result_img_{num}.png')"]
+    return_queue = Queue()
+    procc = Process(target=compile_and_run_and_get_result,
+                    args=(code, images, return_queue))
+    procc.start()
+    TIMEOUT = 100
+    start = time.time()
+    while time.time() - start <= TIMEOUT:
+        try:
+            ms = return_queue.get(timeout=0.1)
+            if ms:
+                break
+        except queue.Empty as e:
+            pass
 
-    result_imgs, result_text, compiled_code = \
-        compile_and_run_and_get_result(code, pre_code_lines, post_code_lines)
+        time.sleep(.1)
+    else:
+        procc.kill()
+        procc.join()
+        return_queue.close()
+
+        print("\nОшибка! Похоже ваш код выполняется бесконечно долго.\nСкорее всего проблема в цикле 'повтор пока'")
+        return
+    result_imgs, result_text, compiled_code = ms
+    for i in result_imgs:
+        i.__class__ = Image.Image
+
+    procc.join()
+    return_queue.close()
+
+    for num, img in enumerate(result_imgs):
+        img.save(f'result_files/result_img_{num}.png')
 
     print("----Гадюка код----")
     print("\n".join(code))
@@ -61,12 +100,21 @@ def run_from_console(code, images=()):
 
 
 def process_exception(e, compiled_code=None, match_compile=None, code=()):
+    #raise e
     def get_line(lineno=None):
-        if not lineno:
-            l_num = match_compile[compiled_code[error.lineno - 1].lstrip()]
-        else:
-            l_num = match_compile[compiled_code[int(lineno) - 1].lstrip()]
-
+        try:
+            try:
+                if not lineno:
+                    l_num = match_compile[compiled_code[error.lineno - 1].lstrip()]
+                else:
+                    l_num = match_compile[compiled_code[int(lineno) - 1].lstrip()]
+            except KeyError:
+                if not lineno:
+                    l_num = match_compile[compiled_code[error.lineno - 1]]
+                else:
+                    l_num = match_compile[compiled_code[int(lineno) - 1]]
+        except Exception:
+            return "Неизвестно", "???"
         line = code[l_num]
         return l_num + 1, line
 
@@ -87,10 +135,14 @@ def process_exception(e, compiled_code=None, match_compile=None, code=()):
     elif isinstance(e, AttributeError):
         a = re.findall(r"'.*?'", str(e))
         l_num, line = get_line()
-
-        t = compiler.TYPES.get(a[0].strip("'"), "объект")
-        return f'Ошибка в строке номер {l_num}:\n  {line.lstrip()} ' \
-               f'\nУ переменной типа {t} нет атрибута {a[1]}'
+        if a:
+            a = a[0].strip("'")
+            t = compiler.TYPES.get(a, f"объект класса {a}")
+            return f'Ошибка в строке номер {l_num}:\n  {line.lstrip()} ' \
+                   f'\nУ переменной типа {t} нет атрибута {a[1]}'
+        else:
+            return f'Ошибка в строке номер {l_num}:\n  {line.lstrip()} ' \
+                   f'\nАттрибута {e} несуществует.'
     elif isinstance(e, TypeError):
         l_num, line = get_line()
 
@@ -114,9 +166,9 @@ def process_exception(e, compiled_code=None, match_compile=None, code=()):
 
     elif isinstance(e, SyntaxError) or isinstance(e, EOFError):
         l_num, line = get_line(lineno=err.lineno)
-
         return f'Ошибка в строке номер {l_num}:\n  {line} ' \
-               f'\nВ этой строке допущена синтаксическая ошибка.'
+               f'\nВ этой строке допущена синтаксическая ошибка.\n' \
+               f'Подробнее: {err.msg}'
     elif isinstance(e, ArithmeticError):
         l_num, line = get_line()
 
