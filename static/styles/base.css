@@ -1,0 +1,23 @@
+.dropdown-toggle {background: #146c43; border-color:#146c43}
+.dropdown-toggle:hover {background: #105636; border-color:#105636}
+.dropdown-toggle:focus {background: #105636; border-color:#105636}
+.dropdown-item:focus {background: DimGray; color:white;}
+
+
+:root {
+  color-scheme: dark;
+  --scrollbar-size: 10px;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background-color: --bs-black;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #454b50;
+    border-radius: 10px;
+}

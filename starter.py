@@ -95,6 +95,9 @@ def run_from_console(code, images=()):
 
     print("----Результат----")
     print(result_text)
+    print("------------------")
+
+    print("Итоговые изображения сохранены в папку result_files")
     if result_imgs:
         print(result_imgs)
 

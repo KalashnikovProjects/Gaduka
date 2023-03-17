@@ -32,6 +32,9 @@ class GadukaStr(str):
 
 
 class GadukaImage(Image.Image):
+    '''
+    Переопределённый унаследованный класс Изображений из Pillow
+    '''
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -45,10 +48,10 @@ class GadukaImage(Image.Image):
         attr = super().__getattribute__(item)
         if item not in ('__getstate__', "getpalette", 'tobytes', '__class__', "__setstate__", 'frombytes', "copy") and \
                 callable(attr):
-            if item in ("crop", "reduce", "_open", "load", "_new", "convert", 'rotate'
-                                                                              "copy", "paste", "_ensure_mutable",
+            if item in ("crop", "reduce", "_open", "load", "_new", "convert", 'rotate',
+                        "copy", "paste", 'transform',
                         "filter", "transpose",
-                        "__reduce_ex__"):
+                        "__reduce_ex__", "_ensure_mutable", "_Image__transformer"):
                 return attr
             else:
                 raise AttributeError(item)
@@ -150,8 +153,9 @@ class ToPythonCommands:
 
     @staticmethod
     def list_join(kwargs):
+
         if "соединитель" not in kwargs:
-            kwargs["соединитель"] = " "
+            kwargs["соединитель"] = "' '"
         if "переменная" not in kwargs:
             kwargs["переменная"] = kwargs["список"]
         return f'{kwargs["переменная"]} = {kwargs["соединитель"]}.join({kwargs["список"]})'
@@ -572,10 +576,11 @@ def get_func(gaduka_command: str, line_num) -> str:
 
 
 def get_command(gaduka_command: str, line_num) -> str:
-    if len(gaduka_command.split(":")) != 2:
+    if len(gaduka_command.split(":")) == 1:
         raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
                                  f"В оформлении строки есть ошибка.")
-    command, args = gaduka_command.split(":")
+    command, *args = gaduka_command.split(":")
+    args = ":".join(args)
 
     kwargs = {}
     brackets_count = 0
@@ -583,10 +588,12 @@ def get_command(gaduka_command: str, line_num) -> str:
     closed_brackets = """)]}"""
     quote_count = None
     a = ""
+
     for i in args:
         if i == "," and brackets_count == 0 and not quote_count:
             if "=" in a:
-                kwargs[a.split("=")[0].strip()] = a.split("=")[1].strip()
+                result = re.findall(r'''(["'].+?["']|[^=]+)''', a)
+                kwargs[result[0].strip()] = result[1].strip()
             else:
                 kwargs[a.strip()] = True
             a = ""
@@ -603,7 +610,8 @@ def get_command(gaduka_command: str, line_num) -> str:
             elif quote_count is None:
                 quote_count = i
     if "=" in a:
-        kwargs[a.split("=")[0].strip()] = a.split("=")[1].strip()
+        result = re.findall(r'''(["'].+?["']|[^=]+)''', a)
+        kwargs[result[0].strip()] = result[1].strip()
     else:
         kwargs[a.strip()] = True
     # kwargs = {i.split("=")[0].strip(): i.split("=")[1].strip() for i in args.split(", ")}
