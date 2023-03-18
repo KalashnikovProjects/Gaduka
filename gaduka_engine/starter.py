@@ -1,26 +1,85 @@
+import base64
+import json
+import platform
 import queue
 import shutil
 import os
 import re
 import time
-
-import compiler
 import traceback as tr
+from io import BytesIO
 from multiprocessing import Process, Queue
+
+from . import compiler
 from PIL import Image
 
 
-def run_from_api(code, images, output):
-    ...
-
-
-def compile_and_run_and_get_result(code, images, process_connect):
-
+def run_from_api(code, images_json):
+    # Возвращает текст, и изображения в формате json
     imgs = []
-    for img_name in images:
-        img_opened = Image.open(img_name)
-        img_opened.load()
-        imgs.append(img_opened)
+    for json_data in images_json:
+        imgs.append(Image.open(BytesIO(base64.b64decode(json_data))))
+
+    return_queue = Queue()
+    procc = Process(target=compile_and_run_and_get_result,
+                    args=(code, imgs, return_queue))
+    procc.start()
+    TIMEOUT = 1.5
+    start = time.time()
+    while time.time() - start <= TIMEOUT:
+        try:
+            ms = return_queue.get(timeout=0.1)
+            if ms:
+                break
+        except queue.Empty as e:
+            pass
+
+        time.sleep(.1)
+    else:
+        procc.kill()
+        procc.join()
+        return_queue.close()
+
+        return "\nОшибка! Похоже ваш код выполняется бесконечно долго.\nСкорее всего проблема в цикле 'повтор пока'", []
+
+    result_imgs, result_text, compiled_code = ms
+    for i in result_imgs:
+        i.__class__ = Image.Image
+
+    procc.join()
+    return_queue.close()
+
+    imgs_json = []
+    for img in result_imgs:
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        img_byte = buffered.getvalue()
+        img_base64 = base64.b64encode(img_byte)
+        imgs_json.append(img_base64)
+    return result_text, result_imgs
+
+
+def mem_limit_only_for_linux(coef):
+    import resource
+    def memory_limit():
+        soft, hard = resource.getrlimit(resource.RLIMIT_AS)
+        resource.setrlimit(resource.RLIMIT_AS, (get_memory() * 1024 * coef, hard))
+
+    def get_memory():
+        with open('/proc/meminfo', 'r') as mem:
+            free_memory = 0
+            for i in mem:
+                sline = i.split()
+                if str(sline[0]) in ('MemFree:', 'Buffers:', 'Cached:'):
+                    free_memory += int(sline[1])
+        return free_memory
+
+    memory_limit()
+
+
+def compile_and_run_and_get_result(code, imgs, process_connect):
+    if platform.system() == "Linux":
+        mem_limit_only_for_linux(0.7)
 
     pilimage = Image.Image
     Image.Image = compiler.GadukaImage
@@ -54,10 +113,16 @@ def run_from_console(code, images=()):
     os.makedirs("result_files")
 
     return_queue = Queue()
+    imgs = []
+    for img_name in images:
+        img_opened = Image.open(img_name)
+        img_opened.load()
+        imgs.append(img_opened)
+
     procc = Process(target=compile_and_run_and_get_result,
-                    args=(code, images, return_queue))
+                    args=(code, imgs, return_queue))
     procc.start()
-    TIMEOUT = 100
+    TIMEOUT = 1.5
     start = time.time()
     while time.time() - start <= TIMEOUT:
         try:

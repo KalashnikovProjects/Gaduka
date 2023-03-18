@@ -80,7 +80,8 @@ def gaduka_type(obj):
 
 
 def get_exec_funcs():
-    return {
+    a = {i: 'trollface' for i in ('eval', 'exit', 'super', 'quit', 'exec', 'os')}
+    b = {
         "__builtins__": {"__import__": __import__},
         "диапазон": range,
         "модуль": abs,
@@ -104,6 +105,7 @@ def get_exec_funcs():
         "тип": gaduka_type,
         "изображение": GadukaImage
     }
+    return a | b
 
 
 class GadukaException(Exception):
@@ -429,7 +431,7 @@ def pre_code() -> list:
                             "фиолетовый": "'violet'"}
 
     commands = ["from PIL import Image, ImageDraw, ImageFont, ImageFilter",
-                "from copy import copy as копия"]
+                "from copy import copy as копия",]
     commands.extend([f"{var} = {value}" for var, value in gaduka_pre_code_vars.items()])
     return commands
 
@@ -488,19 +490,20 @@ def compile_code(code: list, pre_code_py_commands: list = ()) -> tuple[list, dic
 
 
 def compile_line(line: str, line_num=0) -> str:
+    if line == PASS_COMMAND or not (line):
+        return "pass"
+
     # Возвращает ту же строчку, но на python
+    sussy_baka = "   ".join(re.findall(r"""f".*\{.*?}.*"|f'.*\{.*?}.*'""", line))
     structure_finder = re.sub(r"""".*?"|'.*?'""", 'text', line)
     # заменяет строки в ковычках на text,
     # что бы игнорировать то что написано в ковычках
-
-    if line == PASS_COMMAND or not (line):
-        return "pass"
 
     """
     Проверка на содержание технических названий в коде
     """
     for i in PROHIBITION_WORDS:
-        if re.search(f"\W{i}\W", "%" + structure_finder + "%"):
+        if re.search(f"\W{i}\W", "%" + structure_finder + "%") or re.search(f"\W{i}\W", "%" + sussy_baka + "%"):
             raise ProhibitionWordError(f"Ошибка в строке номер {line_num}: \n{line} \n"
                                        f"Некоторые названия нельзя использовать в своей программе:\n" +
                                        ", ".join(PROHIBITION_WORDS) + "\n"
