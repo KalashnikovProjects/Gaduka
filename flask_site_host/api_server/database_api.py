@@ -20,8 +20,8 @@ delete_parser.add_argument('token', required=True)
 
 create_project_parser = reqparse.RequestParser()
 create_project_parser.add_argument('token', required=True)
-create_project_parser.add_argument('name', required=True)
-create_project_parser.add_argument('code', required=True)
+create_project_parser.add_argument('name')
+create_project_parser.add_argument('code')
 create_project_parser.add_argument('img')
 create_project_parser.add_argument('user_id', required=True)
 
@@ -31,7 +31,8 @@ project_only = ('name', 'code', 'img', 'user.id', 'user.name')
 
 def abort_if_user_not_found(user_id):
     session = db_session.create_session()
-    user = session.query(User).get(user_id)
+
+    user = session.get(User, user_id)
     if not user:
         abort(404, message=f"Пользователь {user_id} не найден")
     return session, user
@@ -39,7 +40,7 @@ def abort_if_user_not_found(user_id):
 
 def abort_if_project_not_found(project_id):
     session = db_session.create_session()
-    project = session.query(Projects).get(project_id)
+    project = session.get(Projects, project_id)
     if not project:
         abort(404, message=f"Проект {project_id} не найден")
     return session, project
@@ -47,7 +48,7 @@ def abort_if_project_not_found(project_id):
 
 def abort_id_already_taken(user_id):
     session = db_session.create_session()
-    user = session.query(User).get(user_id)
+    user = session.get(User, user_id)
     if user:
         abort(404, message=f"Пользователь с id {user_id} уже существует")
     session.close()

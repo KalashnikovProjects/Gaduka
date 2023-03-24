@@ -43,6 +43,20 @@
     color-scheme: dark;
 }
 
+#project-data-line {
+    margin-bottom: 45px;
+    margin-top: 10px;
+}
+
+.input-title {
+    background-color: rgba(73, 80, 87, 0.4)!important;
+    border: white;
+    font-size: 1.75em;
+    padding: 0.3rem;
+    color: white;
+    border-radius: 5px;
+}
+
 
 #carouselExampleControls,
 .output,
@@ -65,7 +79,30 @@
     color:white;
 }
 
+#thumb_inp {
+    display: none;
+}
+
+.custom-file-upload {
+    background: rgba(73, 80, 87, 0.4);
+    border: none;
+    font-size: 1.4em;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+#save-btn {
+    width: 100%;
+}
+
 @media (max-width: 1000px) {
+    .col-sm-6, .col-sm-4, .col-sm-2 {
+        min-width: 450px;
+        width: 100%!important;
+    }
+
     .margin_mobile {
         margin-top: 20px;
     }

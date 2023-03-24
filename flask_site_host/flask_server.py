@@ -3,9 +3,9 @@ from datetime import timedelta
 
 import requests
 from flask_restful import Api
-from flask import Flask, render_template, request, session, make_response, redirect, jsonify
+from flask import Flask, render_template, request, session, make_response, redirect, jsonify, abort
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required, login_manager
-from forms.run_code import SaveProjectForm
+from forms.code_page import SaveProjectForm
 import hashlib
 import hmac
 import config
@@ -39,7 +39,7 @@ def bad_request(_):
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
-    a = db_sess.query(User).get(user_id)
+    a = db_sess.get(User, user_id)
     db_sess.close()
     return a
 
@@ -54,29 +54,18 @@ def logout():
 @app.route('/')
 @app.route('/index')
 def index():
-    logged = True
-    my_username = 'Kalashnik'
-
-    return render_template('index.html', my_username=my_username, logged=logged, title="Язык программирования Гадюка")
-
+    return render_template('index.html', title="Язык программирования Гадюка")
 
 @app.route('/users/<username>')
 def user_page(username):
-    logged = True
-    my_username = 'Kalashnik'
+    db_sess = db_session.create_session()
 
-    exist_user = True
-    a = ("/static/img/gaduka-icon.png",
-         "/static/img/tg-icon.png",
-         "/static/img/result_img_2.png",
-         "/static/img/result_img_1.png")
-    b = ("Проект", "Эксперимент", "eagnaiegu;g")
-    projects = enumerate(((f"{random.choice(b)} {j}", random.choice(a)) for j in range(30)))
-    if not exist_user:
-        return render_template("user_error_page.html", my_username=my_username, logged=logged)
+    user = db_sess.query(User).filter(User.username == username).first()
+    projects = db_sess.query(Projects).filter(User.username == username).all()
+    if not user:
+        return render_template("user_error_page.html", user_page_name=username)
 
-    return render_template('user_page.html', my_username=my_username, logged=logged,
-                           user_page_name=username, projects=projects, title=f"Профиль {my_username}")
+    return render_template('user_page.html', user_page_name=username, title=f"Профиль {username}", projects=projects)
 
 
 def check_user(user):
@@ -96,13 +85,24 @@ def check_user(user):
 def login():
     if request.method == "GET":
         return render_template("login.html", title=f"Вход в аккаунт")
-    elif request.method == "POST":
-        user_data = request.json
-        if check_user(user_data):
-            session['formdata'] = request.json
-            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-        else:
-            return bad_request()
+    user_data = request.json
+    if not check_user(user_data):
+        return bad_request()
+
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == user_data['id']).first()
+    if not user:
+        user = User(
+            id=user_data['id'],
+            username=user_data['username'],
+            photo_url=user_data['photo_url'],
+            auth_date=user_data['auth_date'],
+        )
+        db_sess.add(user)
+        db_sess.commit()
+    login_user(user, remember=True)
+    db_sess.close()
+    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
 @app.route('/login_error')
@@ -110,10 +110,60 @@ def login_error_page():
     return render_template('login_error_page.html', title="Ошибка при входе в аккаунт")
 
 
+@login_required
 @app.route('/run_code', methods=['GET', "POST"])
 def run_code():
     form = SaveProjectForm()
     return render_template('code_page.html', title='Запуск кода', form=form)
+
+
+@app.route('/create_project', methods=['GET'])
+@login_required
+def create_project():
+    db_sess = db_session.create_session()
+    project = Projects(
+        name="Новый проект",
+        code='',
+        user_id=current_user.id)
+    db_sess.add(project)
+    db_sess.commit()
+    return redirect(f"/projects/{project.id}")
+
+@app.route('/projects/<int:project_id>', methods=['GET', "POST"])
+def projects_page(project_id):
+    form = SaveProjectForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        project = db_sess.get(Projects, project_id)
+        if form.submit.data:
+            project.name = form.name.data
+            project.code = form.code.data
+            #project.img = form.images.data
+            db_sess.commit()
+            return ('', 204)
+
+        else:
+            db_sess.delete(project)
+            db_sess.commit()
+            return redirect(f"/users/{current_user.username}")
+
+    db_sess = db_session.create_session()
+
+    project = db_sess.get(Projects, project_id)
+    if not project:
+        abort(404)
+
+    db_sess.commit()
+    form.name.data = project.name
+    form.code.data = project.code
+    author = project.user.username
+    db_sess.close()
+    if current_user.is_authenticated and author == current_user.username:
+        template = 'my_project_page.html'
+    else:
+        template = 'project_page.html'
+
+    return render_template(template, title=f'Гадюка проект {project.name}', form=form, author=author)
 
 
 def check_image(img_url):
@@ -132,6 +182,7 @@ def check_image(img_url):
 
 
 def main():
+    db_session.global_init("db/main_gaduka.db")
     api.add_resource(gaduka_api.GadukaRunCodeApi, "/api/v1/engine")
     app.run(port=config.PORT, host='127.0.0.1')
 

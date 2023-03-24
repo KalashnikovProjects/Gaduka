@@ -5,6 +5,8 @@ from wtforms.validators import DataRequired
 
 class SaveProjectForm(FlaskForm):
     name = StringField('Название проекта', validators=[DataRequired(),])
-    code = TextAreaField('Код на Гадюке', validators=[DataRequired(),])
+    code = TextAreaField('Код на Гадюке')
     images = FileField('Добавить иконку')
-    submit = SubmitField('Запустить')
+    submit = SubmitField('Сохранить')
+    delete = SubmitField('')
+

@@ -32,14 +32,14 @@
             <img src="{{ url_for('static', filename='img/read-the-docs-logo.png') }}" alt="Документация" height="28" width="28">
         </button>
 
-        {% if logged %}
+        {% if current_user.is_authenticated %}
             <div class="btn-group">
-                <a type="button" class="btn btn-success link-light" href="/users/{{my_username}}" style="text-decoration: none">{{my_username}}</a>
+                <a type="button" class="btn btn-success link-light" href="/users/{{current_user.username}}" style="text-decoration: none">{{current_user.username}}</a>
                 <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                     <span class="visually-hidden">Toggle Dropdown</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-dark">
-                    <li><a class="dropdown-item" href="/users/{{my_username}}">Профиль</a></li>
+                    <li><a class="dropdown-item" href="/users/{{current_user.username}}">Профиль</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="/logout">Выход из аккаунта</a></li>
                 </ul>
