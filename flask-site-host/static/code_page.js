@@ -18,13 +18,15 @@ function toBase64(file) {
 
 
 async function run() {
-        let images = []
+        let run_btn = $('#run_code_btn');
+        run_btn.prop("disabled",true)
+        run_btn.prop('value', 'Загрузка...')
+        let images = [];
         $('#preview-parent').children('div').each(function () {
             images.push($(this).children('img')[0].src)
         });
         let newData = {"code": $("#code_input").val(),
                         "images": images};
-        console.log(images)
         $.ajax({
         type : "POST",
         url : "/api/v1/engine",
@@ -51,6 +53,12 @@ async function run() {
                  img.src = `data:image/png;base64,${result['result_imgs'][data_i].replace(/['"]+/g, '')}`;
                  img.alt = 'Результат выполнения программы';
              }
+             run_btn.prop("disabled",false);
+            run_btn.prop('value', 'Запустить');
+        },
+        error: function(err)  {
+            run_btn.prop("disabled", false);
+            run_btn.prop('value', 'Запустить');
         }
 })}
 

@@ -49,8 +49,8 @@
 .inputcode {
     background-color: #495057!important;
     color:white;
-    padding: 20px;
     border-radius: 5px;
+    padding: 20px;
 }
 
 .inputcode{
@@ -102,7 +102,9 @@
 .preview {
   display: flex;
   flex-direction: column;
-  margin: 1rem;
+  margin-left: 0.8rem;
+  margin-right: 0.8rem;
+
 }
 .preview img {
   width: 100px;
@@ -110,4 +112,3 @@
   object-fit: contain;
   margin-bottom: 10px;
 }
-

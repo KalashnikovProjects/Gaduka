@@ -43,13 +43,13 @@
                        id="images_code" multiple="multiple" name="files[]" type="file" onchange="changedInput()"/>
             </div>
             <div class="col-sm-2 margin_mobile">
-                <input class="btn btn-success btn-lg btn-block" value="Запустить"
+                <input id='run_code_btn' class="btn btn-success btn-lg btn-block" value="Запустить"
                         onclick="run()"
                         style="text-decoration: none;width: 100%">
             </div>
             </div>
             <div class="row margin_mobile supermargin_mobile photos_load">
-                <div class="col-sm-6" style="max-height: 200px; overflow: auto">
+                <div class="col-sm-6" style="max-height: 200px; overflow: auto; padding: 20px">
                     <div id="preview-parent">
                     </div>
                     <script>loadPreview()</script>
