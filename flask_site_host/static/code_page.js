@@ -21,6 +21,8 @@ async function run() {
         let run_btn = $('#run_code_btn');
         run_btn.prop("disabled",true)
         run_btn.prop('value', 'Загрузка...')
+        $('#output').text("...");
+        document.getElementById("output_imgs").innerHTML = '';
         let images = [];
         $('#preview-parent').children('div').each(function () {
             images.push($(this).children('img')[0].src)
@@ -54,9 +56,10 @@ async function run() {
                  img.alt = 'Результат выполнения программы';
              }
              run_btn.prop("disabled",false);
-            run_btn.prop('value', 'Запустить');
+             run_btn.prop('value', 'Запустить');
         },
         error: function(err)  {
+            $('#output').text("Произошла ошибка на сервере.");
             run_btn.prop("disabled", false);
             run_btn.prop('value', 'Запустить');
         }

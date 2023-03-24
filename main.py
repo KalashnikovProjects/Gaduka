@@ -3,3 +3,7 @@ API
 Flask бекенд сайта
 Телеграмм бот
 """
+
+from flask_site_host import flask_server
+
+flask_server.main()

@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import config
 import sqlalchemy
 from sqlalchemy import orm
@@ -6,6 +8,7 @@ from sqlalchemy_serializer import SerializerMixin
 from .db_session import SqlAlchemyBase
 
 
+@dataclass
 class Projects(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'projects'
 

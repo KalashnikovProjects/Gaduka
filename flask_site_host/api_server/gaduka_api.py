@@ -1,3 +1,5 @@
+import requests
+
 import config
 from gaduka_engine import starter
 
@@ -24,6 +26,5 @@ class GadukaRunCodeApi(Resource):
 
         # if args["token"] not in config.REST_API_TOKENS:
         #     abort(403, message=f"Доступ к API без токена запрещён")
-        return jsonify(
-            run_with_json_images_input(args['code'], args['images'])
-        )
+        result = run_with_json_images_input(args['code'], args['images'])
+        return jsonify(result)
