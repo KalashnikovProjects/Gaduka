@@ -18,7 +18,8 @@ def run_from_api(code, images_json):
     # Возвращает текст, и изображения в формате json
     imgs = []
     for json_data in images_json:
-        imgs.append(Image.open(BytesIO(base64.b64decode(json_data))))
+        if json_data:
+            imgs.append(Image.open(BytesIO(base64.b64decode(json_data))))
 
     return_queue = Queue()
     procc = Process(target=compile_and_run_and_get_result,
@@ -53,10 +54,9 @@ def run_from_api(code, images_json):
     for img in result_imgs:
         buffered = BytesIO()
         img.save(buffered, format="PNG")
-        img_byte = buffered.getvalue()
-        img_base64 = base64.b64encode(img_byte)
-        imgs_json.append(img_base64)
-    return result_text, result_imgs
+        a = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        imgs_json.append(json.dumps(a))
+    return result_text, imgs_json
 
 
 def mem_limit_only_for_linux(coef):
@@ -108,9 +108,9 @@ def compile_and_run_and_get_result(code, imgs, process_connect):
 
 
 def run_from_console(code, images=()):
-    if os.path.exists("result_files"):
-        shutil.rmtree("result_files")
-    os.makedirs("result_files")
+    if os.path.exists("gaduka_engine/result_files"):
+        shutil.rmtree("gaduka_engine/result_files")
+    os.makedirs("gaduka_engine/result_files")
 
     return_queue = Queue()
     imgs = []
@@ -148,7 +148,7 @@ def run_from_console(code, images=()):
     return_queue.close()
 
     for num, img in enumerate(result_imgs):
-        img.save(f'result_files/result_img_{num}.png')
+        img.save(f'gaduka_engine/result_files/result_img_{num}.png')
 
     print("----Гадюка код----")
     print("\n".join(code))
@@ -192,7 +192,7 @@ def process_exception(e, compiled_code=None, match_compile=None, code=()):
     error = err.stack[-1]
 
     if isinstance(e, compiler.GadukaException):
-        return e
+        return e.__str__()
 
     if isinstance(e, NameError):
         a = re.search(r"'.*?'", str(e))[0]
