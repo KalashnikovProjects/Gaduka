@@ -127,9 +127,7 @@ def run_code():
         a = gaduka_api.run_with_json_images_input(code.data, img.data)
 
         return jsonify(a)
-    return render_template('code_page.html', title='Запуск кода', form=form,
-                           images=("/static/img/gaduka-icon-background.png",
-                                   "/static/img/result_img_2.png"))
+    return render_template('code_page.html', title='Запуск кода', form=form)
 
 
 def check_image(img_url):

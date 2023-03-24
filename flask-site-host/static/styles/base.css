@@ -10,6 +10,7 @@
 
 ::-webkit-scrollbar {
     width: 10px;
+    height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -19,6 +20,13 @@
 ::-webkit-scrollbar-thumb {
     background-color: #454b50;
     border-radius: 10px;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+    width: 0;
+    height: 0;
+    border: 16px solid transparent;
 }
 
 /*form.code-form {*/
@@ -48,6 +56,7 @@
 .inputcode{
     height: 400px;
     resize: none;
+    white-space: nowrap;
 }
 
 .inputimg:focus,
@@ -86,3 +95,19 @@
     max-width: 90%;
     width: auto;
 }
+
+#preview-parent {
+  display: flex;
+}
+.preview {
+  display: flex;
+  flex-direction: column;
+  margin: 1rem;
+}
+.preview img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+

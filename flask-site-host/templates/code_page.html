@@ -1,16 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.min.css" crossorigin="anonymous">
-<link href="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
-<script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/js/plugins/buffer.min.js" type="text/javascript"></script>
-<script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/js/plugins/filetype.min.js" type="text/javascript"></script>
-<script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/js/plugins/piexif.min.js" type="text/javascript"></script>
-<script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/js/plugins/sortable.min.js" type="text/javascript"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/js/fileinput.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/js/locales/ru.js"></script>
-
+<script src="https://raw.githack.com/SortableJS/Sortable/master/Sortable.js"></script>
 <script src="{{ url_for('static', filename='code_page.js') }}"></script>
 
 <h1 class="text-white" style="text-align: center; margin-bottom: 80px; margin-top: 10px">Название проекта</h1>
@@ -33,21 +24,9 @@
                 <h4 style="text-align: center">Результат</h4>
                 <div class="output"><a id="output" style="white-space: pre-line">...</a></div>
 
-                {% if not images %}
-                    <script>
-                        let a = document.querySelector(".output");
-                        a.style.height = "470px";
-                    </script>
-                {% else %}
                 <div id="carouselExampleControls" class="carousel slide" data-ride="carousel" data-bs-interval="false"
                      style="height: 400px">
                 <div class="carousel-inner" id="output_imgs">
-                    {% for img in images %}
-                        <div class="carousel-item {% if loop.first %} active {% endif %}">
-                            <img class="img-carousel"
-                                 src="{{img}}" alt="Результат">
-                        </div>
-                    {% endfor %}
                 </div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -56,20 +35,25 @@
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 </button>
                 </div>
-                {% endif %}
             </div>
         </div>
             <div class="row margin_mobile supermargin_mobile photos_load" style="margin-top: -50px">
             <div class="col-sm-4">
                 <input accept="image/jpeg, image/png, image/gif," class="form-control form-control-lg inputimg"
-                       id="images_code" multiple="multiple" name="files[]" type="file" />
-                <input id="input-id" type="file" class="file" data-preview-file-type="text" >
+                       id="images_code" multiple="multiple" name="files[]" type="file" onchange="changedInput()"/>
             </div>
             <div class="col-sm-2 margin_mobile">
                 <input class="btn btn-success btn-lg btn-block" value="Запустить"
                         onclick="run()"
                         style="text-decoration: none;width: 100%">
             </div>
+            </div>
+            <div class="row margin_mobile supermargin_mobile photos_load">
+                <div class="col-sm-6" style="max-height: 200px; overflow: auto">
+                    <div id="preview-parent">
+                    </div>
+                    <script>loadPreview()</script>
+                </div>
             </div>
         </div>
         {{ message }}
