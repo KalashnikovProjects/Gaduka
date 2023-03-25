@@ -6,15 +6,16 @@ import requests
 from flask_restful import Api
 from flask import Flask, render_template, request, session, make_response, redirect, jsonify, abort, url_for
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required, login_manager
-from forms.code_page import SaveProjectForm
+from flask_site_host.forms.code_page import SaveProjectForm
+from flask_site_host.api_server import gaduka_api
+from flask_site_host.data import db_session
+from flask_site_host.data.projects import Projects
+from flask_site_host.data.users import User
+
 import hashlib
 import hmac
 import config
-import random
-from api_server import gaduka_api
-from data import db_session
-from data.projects import Projects
-from data.users import User
+
 
 
 app = Flask(__name__)
@@ -145,7 +146,7 @@ def projects_page(project_id):
                 img = str(base64.b64encode(a)).strip("b'")
                 # if check_image(a):
                 project.img = img
-                db_sess.commit()
+            db_sess.commit()
             return '', 204
 
         else:
@@ -188,7 +189,11 @@ def check_image(img_url):
 
 
 def main():
-    db_session.global_init("db/main_gaduka.db")
+
+    if __name__ == "__main__":
+        db_session.global_init("db/main_gaduka.db")
+    else:
+        db_session.global_init("flask_site_host/db/main_gaduka.db")
     api.add_resource(gaduka_api.GadukaRunCodeApi, "/api/v1/engine")
     app.run(port=config.PORT, host='127.0.0.1')
 
