@@ -1,5 +1,5 @@
 from telegram.ext import Application, MessageHandler, filters, CommandHandler
-from config import TOKEN
+from config import BOT_TOKEN
 
 
 async def start(update, context):
@@ -37,7 +37,7 @@ async def help_command(update, context):
 
 
 def main():
-    application = Application.builder().token(TOKEN).build()
+    application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.run_polling()
