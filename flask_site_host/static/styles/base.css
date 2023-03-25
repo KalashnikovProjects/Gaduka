@@ -4,22 +4,32 @@
 .dropdown-item:focus {background: DimGray; color:white;}
 
 
+/*.scroll-snap::-webkit-scrollbar {*/
+/*      width: 0;*/
+/*      height: 0;*/
+/*}*/
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
 :root {
   --scrollbar-size: 10px;
 }
 
 ::-webkit-scrollbar {
+    left: 50px;
     width: 10px;
     height: 10px;
-}
-
-::-webkit-scrollbar-track {
-	background-color: --bs-black;
 }
 
 ::-webkit-scrollbar-thumb {
     background-color: #454b50;
     border-radius: 10px;
+    left: 50px;
+    direction: ltr;
 }
 
 ::-webkit-scrollbar-corner {
@@ -39,6 +49,36 @@
 /*    */
 /*}*/
 
+
+.index-section {
+    scroll-snap-align: center none;
+    scroll-snap-stop: always;
+    scroll-margin: 40px;
+    height: 90vh;
+    margin-bottom: 5vh;
+}
+
+
+.description-block p {
+    text-align: left;
+    min-width: 30vw;
+}
+
+@media (max-width: 570px) {
+        .description-block p {
+            text-align: center;
+            min-width: 60vw;
+        }
+        .description-block h1 {
+            text-align: center;
+
+        }
+
+        .gaduka_img_index {
+            height: auto;
+            width: 60vw;
+        }
+}
 .dark_shame {
     color-scheme: dark;
 }
@@ -101,7 +141,7 @@
 
 
 @media (max-width: 445px) {
-    #header {
+    header {
         justify-content: center!important;
     }
 
@@ -112,7 +152,11 @@
 
 
 @media (max-width: 1000px) {
-    .col-sm-6, .col-sm-4, .col-sm-2 {
+    .description-block {
+            width: 100%;
+        }
+
+    form .col-sm-6, .col-sm-4, .col-sm-2 {
         min-width: 450px;
         width: 100%!important;
     }

@@ -2,4 +2,41 @@
 
 {% block content %}
 
+<script src="https://cdn.statically.io/gh/kswedberg/jquery-smooth-scroll/3948290d/jquery.smooth-scroll.min.js"></script>
+<div data-bs-theme="dark" class="text-white scroll-snap" id="index_div" >
+    <section id='description' class="index-section container justify-content-center d-flex align-items-center">
+        <div class="container py-5 row row-cols-auto g-3  justify-content-center content-section text-center p-5 mb-4 bg-body-tertiary rounded-3">
+            <div class="col-sm-5">
+                <img class="gaduka_img_index" src="{{ url_for('static', filename='img/gaduka-icon.png') }}" alt=" " height="300" width="300" style="margin-right: 2em;">
+            </div>
+            <div class="col-md-7 description-block" style="text-align: left">
+                <h1 class="display-2 fw-bold">Гадюка</h1>
+                <p class="fs-3"> - это язык программирования на русском языке для начинающих, позволяющий редактировать изображения и текст.</p>
+            </div>
+        </div>
+    </section>
+    <section id='in_browser' class="index-section container justify-content-center d-flex align-items-center">
+        <div class="container py-5 row row-cols-auto g-3  justify-content-center content-section text-center p-5 mb-4 bg-body-tertiary rounded-3">
+            <div class="col-sm-5">
+                <img class="gaduka_img_index" src="{{ url_for('static', filename='img/gaduka-icon.png') }}" alt=" " height="300" width="300" style="margin-right: 2em;margin-left: 0.2em">
+            </div>
+            <div class="col-md-7 description-block" style="text-align: left">
+                <h1 class="display-2 fw-bold">Гадюка</h1>
+                <p class="fs-3"> - это язык программирования для начинающих, позволяющий редактировать изображения и текст.</p>
+            </div>
+        </div>
+    </section>
+    <section id='section3' class="index-section container justify-content-center d-flex align-items-center">
+        <div class="container py-5 row row-cols-auto g-3  justify-content-center content-section text-center p-5 mb-4 bg-body-tertiary rounded-3">
+            <div class="col-sm-5">
+                <img class="gaduka_img_index" src="{{ url_for('static', filename='img/gaduka-icon.png') }}" alt=" " height="300" width="300" style="margin-right: 2em;margin-left: 0.2em">
+            </div>
+            <div class="col-md-7 description-block" style="text-align: left">
+                <h1 class="display-2 fw-bold">Гадюка</h1>
+                <p class="fs-3"> - это язык программирования для начинающих, позволяющий редактировать изображения и текст.</p>
+            </div>
+        </div>
+    </section>
+</div>
+<script src="{{ url_for('static', filename='scroll.js') }}"></script>
 {% endblock %}
