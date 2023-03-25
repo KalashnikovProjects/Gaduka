@@ -44,7 +44,7 @@
 }
 
 #project-data-line {
-    margin-bottom: 45px;
+    margin-bottom: 55px;
     margin-top: 10px;
 }
 
@@ -95,7 +95,21 @@
 
 #save-btn {
     width: 100%;
+    min-width: 160px!important;
+    margin-right: 10vw;
 }
+
+
+@media (max-width: 445px) {
+    #header {
+        justify-content: center!important;
+    }
+
+    #nav-right {
+        margin-top: 20px;
+    }
+}
+
 
 @media (max-width: 1000px) {
     .col-sm-6, .col-sm-4, .col-sm-2 {

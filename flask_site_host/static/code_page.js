@@ -1,22 +1,3 @@
-function toBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
-  }
-
-  async function tobase64Handler(files) {
-    const filePathsPromises = [];
-    files.forEach(file => {
-      filePathsPromises.push(this.toBase64(file));
-    });
-    const filePaths = await Promise.all(filePathsPromises);
-    return filePaths;
-  }
-
-
 async function run() {
         let run_btn = $('#run_code_btn');
         run_btn.prop("disabled",true)

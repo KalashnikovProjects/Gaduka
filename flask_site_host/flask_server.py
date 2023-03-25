@@ -1,9 +1,10 @@
+import base64
 import json
 from datetime import timedelta
 
 import requests
 from flask_restful import Api
-from flask import Flask, render_template, request, session, make_response, redirect, jsonify, abort
+from flask import Flask, render_template, request, session, make_response, redirect, jsonify, abort, url_for
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required, login_manager
 from forms.code_page import SaveProjectForm
 import hashlib
@@ -28,12 +29,12 @@ login_manager.init_app(app)
 
 @app.errorhandler(404)
 def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 404)
+    return render_template("error_page.html", error="Такого проекта не существует.")
 
 
 @app.errorhandler(400)
 def bad_request(_):
-    return make_response(jsonify({'error': 'Bad Request'}), 400)
+    return render_template("error_page.html", error="Ошибка оформления запроса.")
 
 
 @login_manager.user_loader
@@ -63,7 +64,7 @@ def user_page(username):
     user = db_sess.query(User).filter(User.username == username).first()
     projects = db_sess.query(Projects).filter(User.username == username).all()
     if not user:
-        return render_template("user_error_page.html", user_page_name=username)
+        return render_template("error_page.html", error='Такого профиля не существует', title='Такого профиля не существует')
 
     return render_template('user_page.html', user_page_name=username, title=f"Профиль {username}", projects=projects)
 
@@ -107,7 +108,7 @@ def login():
 
 @app.route('/login_error')
 def login_error_page():
-    return render_template('login_error_page.html', title="Ошибка при входе в аккаунт")
+    return render_template('error_page.html', title="Ошибка при входе в аккаунт", error='Произошла ошибка при регистрации')
 
 
 @login_required
@@ -138,9 +139,14 @@ def projects_page(project_id):
         if form.submit.data:
             project.name = form.name.data
             project.code = form.code.data
-            #project.img = form.images.data
-            db_sess.commit()
-            return ('', 204)
+            if form.images.data:
+                form.images.data.stream.seek(0)
+                a = form.images.data.read()
+                img = str(base64.b64encode(a)).strip("b'")
+                # if check_image(a):
+                project.img = img
+                db_sess.commit()
+            return '', 204
 
         else:
             db_sess.delete(project)
@@ -168,15 +174,15 @@ def projects_page(project_id):
 
 def check_image(img_url):
     # Автомодерация изображений, перед тем, как поставить их на обложку проекта
-    url = 'https://app.nanonets.com/api/v2/ImageCategorization/LabelUrls/'
+    url = 'https://app.nanonets.com/api/v2/OCR/Model/353cea12-4dcc-47ee-b139-dd345157b17d/LabelFile/'
 
     headers = {'accept': 'application/x-www-form-urlencoded'}
 
-    data = {'modelId': '353cea12-4dcc-47ee-b139-dd345157b17d', 'urls': [img_url]}
+    data = {'file': img_url}
 
     response = requests.request('POST', url, headers=headers,
                                 auth=requests.auth.HTTPBasicAuth(config.NANONETS_API_TOKEN, ''),
-                                data=data).json()
+                                files=data).json()
     res = response['result']
     return not res['prediction'][0]["probability"] > 0.3
 
