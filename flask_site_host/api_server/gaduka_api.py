@@ -6,8 +6,6 @@ from gaduka_engine import starter
 from flask import jsonify, request
 from flask_restful import Resource, reqparse , abort #, Api
 #import json
-# from ..data import db_session
-# from ..data.users import User
 
 
 

@@ -4,6 +4,7 @@ Flask бекенд сайта
 Телеграмм бот
 """
 
-from flask_site_host import flask_server
+from flask_site_host.flask_server import main
 
-flask_server.main()
+if __name__ == '__main__':
+    main()
