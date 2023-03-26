@@ -20,6 +20,80 @@ TYPES = {"list": "список", "str": "строка", "int": "число", "bo
          "function": "функция", "float": "число", "NoneType": 'ничего'}
 
 
+def pre_funcs():
+    return f"""class compiler_data: pass
+global ImageDraw
+def a(to, where, color, text):
+    class compiler_data: pass
+    compiler_data.draw = ImageDraw.Draw(to)
+    compiler_data.font = ImageFont.truetype("arial.ttf", 50, encoding='UTF-8')
+    compiler_data.w, compiler_data.h = compiler_data.draw.textsize(text, font=compiler_data.font)
+    compiler_data.place = list(where)
+    compiler_data.place[0] = compiler_data.place[0] * to.width - compiler_data.w // 2
+    compiler_data.place[1] = compiler_data.place[1] * to.height - compiler_data.h // 2
+    compiler_data.draw.text(compiler_data.place, text, fill=color, 
+    font=compiler_data.font)
+compiler_data.text_to_img = a
+
+def a(to, where, who):
+    class compiler_data: pass
+    compiler_data.background = to
+    compiler_data.img = who
+    compiler_data.w, compiler_data.h = compiler_data.img.size
+    compiler_data.place = list(where)
+    compiler_data.place[0] = int(compiler_data.place[0] * to.width - compiler_data.w // 2)
+    compiler_data.place[1] = int(compiler_data.place[1] * to.height - compiler_data.h // 2)
+    compiler_data.background.paste(compiler_data.img, compiler_data.place, compiler_data.img)
+compiler_data.img_to_img = a
+
+def a(to, where, color, width):
+    class compiler_data: pass
+    compiler_data.draw = ImageDraw.Draw(to)
+    compiler_data.li = []
+    for compiler_data.i in where:
+        compiler_data.i = list(compiler_data.i)
+        compiler_data.i[0] = compiler_data.i[0] * to.width
+        compiler_data.i[1] = compiler_data.i[1] * to.height
+        compiler_data.li.append(tuple(compiler_data.i))
+    compiler_data.draw.line(compiler_data.li, fill=color, width=width)\n
+compiler_data.line_to_img = a
+
+def a(to, where, wide, abc1):
+    class compiler_data: pass
+    compiler_data.draw = ImageDraw.Draw(to)
+    compiler_data.li = []
+    for compiler_data.i in where:
+        compiler_data.i = list(compiler_data.i)
+        compiler_data.i[0] = compiler_data.i[0] * to.width
+        compiler_data.i[1] = compiler_data.i[1] * to.height
+        compiler_data.li.append(tuple(compiler_data.i))
+    compiler_data.draw.polygon(compiler_data.li, width=wide, **abc1)\n
+compiler_data.shape_to_img = a
+
+def a(to, where, rad, wide, abc1):
+    class compiler_data: pass
+    compiler_data.draw = ImageDraw.Draw(to)
+    compiler_data.rad = rad
+    compiler_data.li = ((where[0] - rad) * to.width,
+                                (where[1] - rad) * to.height,
+                                (where[0] + rad) * to.width,
+                                (where[1] + rad) * to.height,)
+                                
+    compiler_data.draw.ellipse(compiler_data.li, width=wide, **abc1)
+compiler_data.circle_to_img = a
+
+def a(to, where, height, width, wide, abc1):
+    class compiler_data: pass
+    compiler_data.draw = ImageDraw.Draw(to)
+    compiler_data.li = (where[0] * to.width,
+                            where[1] * to.height,
+                            (where[0] + width) * to.width,
+                            (where[1] + height) * to.height,)
+    
+    compiler_data.draw.rectangle(compiler_data.li, width=wide, **abc1)\n
+compiler_data.rect_to_img = a
+"""
+
 class GadukaStr(str):
     def __new__(cls, *args, **kwargs):
         args = list(args)
@@ -91,7 +165,7 @@ def get_exec_funcs():
         "пронумеровать": enumerate,
         "десятичная_дробь": float,
         "число": int,
-        "длинна": len,
+        "длина": len,
         "список": list,
         "наибольшее_значение": max,
         "наименьшее_значение": min,
@@ -185,30 +259,11 @@ class ToPythonCommands:
         if "цвет" not in kwargs:
             kwargs["цвет"] = '"black"'
 
-        return f"""
-        class compiler_data: pass
-        compiler_data.draw = ImageDraw.Draw({kwargs['куда']})
-        compiler_data.font = ImageFont.truetype("arial.ttf", 50, encoding='UTF-8')
-        compiler_data.w, compiler_data.h = compiler_data.draw.textsize({kwargs['текст']}, font=compiler_data.font)
-        compiler_data.place = list({kwargs['где']})
-        compiler_data.place[0] = compiler_data.place[0] * {kwargs['куда']}.width - compiler_data.w // 2
-        compiler_data.place[1] = compiler_data.place[1] * {kwargs['куда']}.height - compiler_data.h // 2
-        compiler_data.draw.text(compiler_data.place, {kwargs['текст']}, fill={kwargs["цвет"]}, 
-        font=compiler_data.font)\n
-        """
+        return f"""compiler_data.text_to_img({kwargs['куда']}, {kwargs['где']}, {kwargs["цвет"]}, {kwargs['текст']})"""
 
     @staticmethod
     def paste_image_to_image(kwargs):
-        return f"""
-        class compiler_data: pass
-        compiler_data.background = {kwargs['куда']}
-        compiler_data.img = {kwargs['какую']}
-        compiler_data.w, compiler_data.h = compiler_data.img.size
-        compiler_data.place = list({kwargs['где']})
-        compiler_data.place[0] = int(compiler_data.place[0] * {kwargs['куда']}.width - compiler_data.w // 2)
-        compiler_data.place[1] = int(compiler_data.place[1] * {kwargs['куда']}.height - compiler_data.h // 2)
-        compiler_data.background.paste(compiler_data.img, compiler_data.place, compiler_data.img)\n
-        """
+        return f"""compiler_data.img_to_img({kwargs['куда']}, {kwargs['где']}, {kwargs["цвет"]}, {kwargs['текст']})"""
 
     @staticmethod
     def paste_line_to_image(kwargs):
@@ -217,89 +272,51 @@ class ToPythonCommands:
         if "ширина" not in kwargs:
             kwargs["ширина"] = '2'
 
-        return f"""
-        class compiler_data: pass
-        compiler_data.draw = ImageDraw.Draw({kwargs['куда']})
-        compiler_data.li = []
-        for compiler_data.i in {kwargs['точки']}:
-            compiler_data.i = list(compiler_data.i)
-            compiler_data.i[0] = compiler_data.i[0] * {kwargs['куда']}.width
-            compiler_data.i[1] = compiler_data.i[1] * {kwargs['куда']}.height
-            compiler_data.li.append(tuple(compiler_data.i))
-        compiler_data.draw.line(compiler_data.li, fill={kwargs["цвет"]}, width={kwargs["ширина"]})\n
-        """
+        return f"""compiler_data.line_to_img({kwargs['куда']}, {kwargs['точки']}, {kwargs["цвет"], {kwargs["ширина"]}})"""
 
     @staticmethod
     def paste_circle_to_image(kwargs):
         if "ширина_обводки" not in kwargs:
             kwargs["ширина_обводки"] = '2'
         if "цвет" not in kwargs and "обводка" not in kwargs:
-            a = f'outline="black"'
+            a = '{outline: "black"}'
         elif "цвет" not in kwargs:
-            a = f'outline={kwargs["обводка"]}'
+            a = f'{"{"}outline: {kwargs["обводка"]}{"}"}'
         elif "обводка" not in kwargs:
-            a = f'fill={kwargs["цвет"]}'
+            a = f'{"{"}fill: {kwargs["цвет"]}{"}"}'
         else:
-            a = f'fill={kwargs["цвет"]}, outline={kwargs["обводка"]}'
+            a = f'{"{"}fill: {kwargs["цвет"]}, outline: {kwargs["обводка"]}{"}"}'
 
-        return f"""class compiler_data: pass
-        compiler_data.draw = ImageDraw.Draw({kwargs['куда']})
-        compiler_data.rad = {kwargs['радиус']}
-        compiler_data.li = (({kwargs['центр']}[0] - {kwargs['радиус']}) * {kwargs['куда']}.width,
-                                ({kwargs['центр']}[1] - {kwargs['радиус']}) * {kwargs['куда']}.height,
-                                ({kwargs['центр']}[0] + {kwargs['радиус']}) * {kwargs['куда']}.width,
-                                ({kwargs['центр']}[1] + {kwargs['радиус']}) * {kwargs['куда']}.height,)
-                                
-        compiler_data.draw.ellipse(compiler_data.li, {a}, width={kwargs["ширина_обводки"]})\n
-        """
+        return f"""compiler_data.circle_to_img({kwargs['куда']}, {kwargs['центр']}, {kwargs['радиус']}, {kwargs["ширина_обводки"]}, abc1={a})"""
 
     @staticmethod
     def paste_shape_to_image(kwargs):
         if "ширина_обводки" not in kwargs:
             kwargs["ширина_обводки"] = '2'
         if "цвет" not in kwargs and "обводка" not in kwargs:
-            a = f'outline="black"'
+            a = '{"outline": "black"}'
         elif "цвет" not in kwargs:
-            a = f'outline={kwargs["обводка"]}'
+            a = f'{"{"}"outline": {kwargs["обводка"]}{"}"}'
         elif "обводка" not in kwargs:
-            a = f'fill={kwargs["цвет"]}'
+            a = f'{"{"}"fill": {kwargs["цвет"]}{"}"}'
         else:
-            a = f'fill={kwargs["цвет"]}, outline={kwargs["обводка"]}'
+            a = f'{"{"}"fill": {kwargs["цвет"]}, "outline": {kwargs["обводка"]}{"}"}'
 
-        return f"""
-        class compiler_data: pass
-        compiler_data.draw = ImageDraw.Draw({kwargs['куда']})
-        compiler_data.li = []
-        for compiler_data.i in {kwargs['углы']}:
-            compiler_data.i = list(compiler_data.i)
-            compiler_data.i[0] = compiler_data.i[0] * {kwargs['куда']}.width
-            compiler_data.i[1] = compiler_data.i[1] * {kwargs['куда']}.height
-            compiler_data.li.append(tuple(compiler_data.i))
-        compiler_data.draw.polygon(compiler_data.li, {a}, width={kwargs["ширина_обводки"]})\n
-        """
+        return f"""compiler_data.shape_to_img({kwargs['куда']}, {kwargs['углы']}, {kwargs["ширина_обводки"]}, abc1={a})"""
 
     @staticmethod
     def paste_rect_to_image(kwargs):
         if "ширина_обводки" not in kwargs:
             kwargs["ширина_обводки"] = '2'
         if "цвет" not in kwargs and "обводка" not in kwargs:
-            a = f'outline="black"'
+            a = '{"outline": "black"}'
         elif "цвет" not in kwargs:
-            a = f'outline={kwargs["обводка"]}'
+            a = f'{"{"}"outline": {kwargs["обводка"]}{"}"}'
         elif "обводка" not in kwargs:
-            a = f'fill={kwargs["цвет"]}'
+            a = f'{"{"}"fill": {kwargs["цвет"]}{"}"}'
         else:
-            a = f'fill={kwargs["цвет"]}, outline={kwargs["обводка"]}'
-
-        return f"""class compiler_data: pass
-        compiler_data.draw = ImageDraw.Draw({kwargs['куда']})
-        compiler_data.li = ({kwargs['где']}[0] * {kwargs['куда']}.width,
-                                {kwargs['где']}[1] * {kwargs['куда']}.height,
-                                ({kwargs['где']}[0] + {kwargs['ширина']}) * {kwargs['куда']}.width,
-                                ({kwargs['где']}[1] + {kwargs['высота']}) * {kwargs['куда']}.height,)
-
-        compiler_data.draw.rectangle(compiler_data.li, {a}, width={kwargs["ширина_обводки"]})\n
-        """
+            a = f'{"{"}"fill": {kwargs["цвет"]}, "outline": {kwargs["обводка"]}{"}"}'
+        return f"""compiler_data.rect_to_img({kwargs['куда']}, {kwargs['где']}, {kwargs['высота']}, {kwargs['ширина']}, {kwargs["ширина_обводки"]}, abc1={a})"""
 
     """
     Функции обработки изображений
@@ -431,7 +448,7 @@ def pre_code() -> list:
                             "фиолетовый": "'violet'"}
 
     commands = ["from PIL import Image, ImageDraw, ImageFont, ImageFilter",
-                "from copy import copy as копия",]
+                "from copy import copy as копия", pre_funcs()]
     commands.extend([f"{var} = {value}" for var, value in gaduka_pre_code_vars.items()])
     return commands
 
@@ -490,8 +507,11 @@ def compile_code(code: list, pre_code_py_commands: list = ()) -> tuple[list, dic
 
 
 def compile_line(line: str, line_num=0) -> str:
-    if line == PASS_COMMAND or not (line):
+    if line == PASS_COMMAND:
         return "pass"
+
+    if not (line):
+        return ""
 
     # Возвращает ту же строчку, но на python
     sussy_baka = "   ".join(re.findall(r"""f".*\{.*?}.*"|f'.*\{.*?}.*'""", line))

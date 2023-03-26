@@ -89,6 +89,7 @@ def compile_and_run_and_get_result(code, imgs, process_connect):
     try:
         compiled_code, match_not_compile = compiler.compile_code(code=code)
 
+        # print("\n".join(compiled_code))
         result_imgs, result_text = [], []
         exec("\n".join(compiled_code), {"итоговые_изображения": result_imgs, "итоговый_текст": result_text,
                                         "изображения": imgs},

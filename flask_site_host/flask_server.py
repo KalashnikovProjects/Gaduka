@@ -15,7 +15,7 @@ from flask_site_host.data.users import User
 import hashlib
 import hmac
 import config
-
+from flask_site_host.code_examples import EXAMPLES
 
 
 app = Flask(__name__)
@@ -30,7 +30,7 @@ login_manager.init_app(app)
 
 @app.errorhandler(404)
 def not_found(error):
-    return render_template("error_page.html", error="Такого проекта не существует.")
+    return render_template("error_page.html", error="Такой страницы не существует.")
 
 
 @app.errorhandler(400)
@@ -56,7 +56,7 @@ def logout():
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html', title="Язык программирования Гадюка")
+    return render_template('index.html', title="Язык программирования Гадюка", examples=EXAMPLES)
 
 @app.route('/users/<username>')
 def user_page(username):
@@ -158,7 +158,7 @@ def projects_page(project_id):
 
     project = db_sess.get(Projects, project_id)
     if not project:
-        abort(404)
+        return render_template("error_page.html", error="Такого проекта не существует")
 
     db_sess.commit()
     form.name.data = project.name

@@ -1,3 +1,21 @@
+var unsaved = false;
+
+
+function changed () {
+    unsaved = true;
+}
+
+$(".input-title").change(changed);
+$("#thumb_inp").change(changed);
+$(".inputcode").change(changed);
+
+window.onbeforeunload = function (){
+    if(unsaved){
+        return "You have unsaved changes on this page. Do you want to leave this page and discard your changes or stay on this page?";
+    }
+}
+
+
 async function run() {
         let run_btn = $('#run_code_btn');
         run_btn.prop("disabled",true)
@@ -51,10 +69,10 @@ var dataTransfer = new DataTransfer()
 
 function changedInput () {
 
-  let files = window.input.files
+    let files = window.input.files
 
-  for (let i = 0; i < files.length; i++) {
-    dataTransfer.items.add(files[i])
+    for (let i = 0; i < files.length; i++) {
+        dataTransfer.items.add(files[i])
 
     let reader, preview, previewImage;
     reader = new FileReader();

@@ -15,7 +15,7 @@
     <a href="/projects/{{proj.id}}" class="link-light" style="text-decoration: none">
       <div class="col">
         <div class="card bg-secondary" style="width: 12rem;height: 13rem;background-color: #5e676f!important">
-          <img src="data:image/png;base64,{{proj.img}}" class="card-img-top img-fluid"
+          <img src="{% if not proj.img.startswith('img') %}data:image/png;base64,{{proj.img}}{% else %} {{url_for('static', filename=proj.img)}} {% endif %}" class="card-img-top img-fluid"
               style="max-width: 100%;max-height: 60%; object-fit: contain; margin-top: 10%" alt="">
           <div class="card-body">
             <h5 class="card-title" style="text-align: center">{{proj.name}}</h5>

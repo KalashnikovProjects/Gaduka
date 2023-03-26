@@ -30,7 +30,7 @@ edit_project_parser.add_argument('code')
 edit_project_parser.add_argument('img')
 
 user_only = ('username', 'photo_url', 'auth_date')
-project_only = ('name', 'code', 'img', 'user.id', 'user.name')
+project_only = ('name', 'code', 'img', 'user.id', 'user.username')
 project_edit_only = ('name', 'code', 'img')
 
 
@@ -67,7 +67,11 @@ def abort_if_token_error(token):
 class UsersResource(Resource):
     def get(self, user_id):
         _, user = abort_if_user_not_found(user_id)
-        return jsonify({"user": user})
+        a = user.to_dict(only=user_only)
+        a['projects'] = []
+        for i in user.projects:
+            a['projects'].append(i.to_dict(only=("id", 'name', 'img')))
+        return jsonify({"user": a})
 
     def delete(self, user_id):
         args = delete_parser.parse_args()
@@ -79,11 +83,11 @@ class UsersResource(Resource):
 
 
 class UsersListResource(Resource):
-    def post(self, user_id):
+    def post(self):
         # id пользователя в базе данных совпадает с id пользователя telegram
         args = create_user_parser.parse_args()
         abort_if_token_error(args['token'])
-        abort_id_already_taken(user_id)
+        abort_id_already_taken(args["id"])
         session = db_session.create_session()
         kwa = {}
         for i in user_only:
@@ -98,7 +102,7 @@ class UsersListResource(Resource):
 class ProjectsResource(Resource):
     def get(self, project_id):
         _, project = abort_if_project_not_found(project_id)
-        return jsonify({"project": project})
+        return jsonify({"project": project.to_dict(only=project_only)})
 
     def delete(self, project_id):
         args = delete_parser.parse_args()
@@ -123,7 +127,7 @@ class ProjectsListResource(Resource):
     def get(self):
         session = db_session.create_session()
         projects = session.query(Projects).all()
-        return jsonify({'projects': projects})
+        return jsonify({'projects': [i.to_dict(only=project_only) for i in projects]})
 
     def post(self):
         args = create_project_parser.parse_args()

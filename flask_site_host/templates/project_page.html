@@ -5,7 +5,7 @@
 <script src="{{ url_for('static', filename='code_page.js') }}"></script>
 
 <h1 class="text-white" style="text-align: center; margin-bottom: 80px; margin-top: 10px">
-    {{ form.name.data }} <small>от {{ author }}</small></h1>
+    {{ form.name.data }} <small style="font-size: 25px">от <a href="/users/{{ author }}" class="link-light" style="text-decoration: none; font-weight: 700">{{ author }}</a></small></h1>
 <form method="POST" id='main_form' enctype="multipart/form-data" data-bs-theme="dark"
       class="code-form text-white bd-example">
         {{ form.hidden_tag() }}
