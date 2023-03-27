@@ -199,6 +199,10 @@ def main():
     api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
     api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
     api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
+    if __name__ == "__main__":
+        app.run(port=config.PORT, host='127.0.0.1')
+    else:
+        return app
 
 
 if __name__ == '__main__':
