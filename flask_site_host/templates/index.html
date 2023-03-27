@@ -35,10 +35,10 @@
                 <div class="col"><a href="/run_code" type="button" class="btn btn-success btn-lg" style="height: 48px; width: 193px; margin-left: 5%">Запустить код</a></div>
         </div></div>
     </section>
-    <section id='examples' class="index-section last-section container justify-content-center d-flex align-items-center">
+    <section id='examples-big' class="examples index-section last-section container justify-content-center d-flex align-items-center">
         <div class="container justify-content-center content-section bg-body-tertiary rounded-3 p-5"
              style="padding-bottom: 0.5rem!important; padding-right: 0.5rem!important;">
-        <h1 class="display-5 fw-bold" style="margin-left: 5px; margin-bottom: 40px">Примеры кода на Гадюке</h1>
+        <h1 class="display-5 fw-bold" style="text-align: center; margin-bottom: 40px; padding-left: 0!important; margin-left: -10px">Примеры кода на Гадюке</h1>
         <div class="d-flex align-items-start" style="height: 60vh">
             <div class="nav nav-tabs flex-column examples-tabs" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                 {% for example in examples %}
@@ -63,15 +63,70 @@
                         </div>
                     </div>
                     </div>
-                    <a href="/projects/{{ example.id }}" type="button" class="btn btn-success btn-lg" style="height: 48px; width: 193px">Запустить код</a>
+                    <a href="/projects/{{ example.id }}" type="button" class="btn btn-success btn-lg" style="height: 48px; width: 250px">Протестировать код</a>
                 </div>
                 {% endfor %}
             </div>
         </div>
         </div>
     </section>
-    <section id='in_browser' class="index-section container justify-content-center d-flex align-items-center">
-        <div class="container py-5 row row-cols-auto g-3 justify-content-center content-section text-center p-0 mb-5 bg-body-tertiary rounded-3">
+    <section id='examples-small' class="examples index-section last-section container justify-content-center d-flex align-items-center">
+        <div class="container justify-content-center content-section bg-body-tertiary rounded-3 p-5"
+             style="padding-bottom: 0.5rem!important; padding-right: 0.5rem!important;">
+        <h1 class="display-7 fw-bold" style="padding-top: 5px!important; text-align: center; margin-bottom: 10px; padding-left: 0!important; margin-left: -10px">Примеры кода на Гадюке</h1>
+        <div class="align-items-center" style="height: 50vh">
+            <ul class="nav nav-pills mb-3 examples-tabs" id="v-pills-tab" role="tablist" aria-orientation="horizontal">
+                {% for example in examples %}
+                    <li class="nav-item" role="presentation"><button class="btn btn-gray {% if loop.first %} active {% endif %}" data-bs-toggle="pill" data-bs-target="#example-{{ loop.index }}-l" type="button" role="tab" aria-controls="example-{{ loop.index }}-l" aria-selected="true">{{ example.name }}</button></li>
+                {% endfor %}
+            </ul >
+            <div class="tab-content" id="v-pills-tabContent" style="margin-left: 35px; margin-top: 5px; height: 60vh">
+                {% for example in examples %}
+                    <div class="examples-tab-div-1 tab-pane fade {% if loop.first %} active show {% endif %}" id="example-{{ loop.index }}-l" role="tabpanel" aria-labelledby="example-{{ loop.index }}-l-tab">
+                        <div class="examples-tab-div content-section row">
+                        <div class="examples-data col-md-7" style="max-width: 80vw">
+                            <h4>Код на Гадюке</h4>
+                            <div class="output">
+                                <a>{{example.code}}</a>
+                            </div>
+                    </div>
+
+                    <div class="examples-data col-md-4" style="max-width: 80vw">
+                        <h4 style="text-align: center">Результат выполнения</h4>
+                        <div class="output" style="height: 80%">
+                            <a {% if example.id == "4" %} style="white-space: pre-line!important;" {% endif %}>{{ example.result }}</a>
+                        </div>
+                    </div>
+                    </div>
+                    <a href="/projects/{{ example.id }}" type="button" class="btn btn-success btn-lg" style="height: 48px; width: 250px">Протестировать код</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        </div>
+    </section>
+    <section id='enjoy-gaduka' class="index-section container justify-content-center d-flex align-items-center" style="margin-bottom: 0!important;">
+        <div class="container py-5 row row-cols-auto g-3 justify-content-center content-section text-center p-0 mb-5 bg-body-tertiary rounded-3" style="grid-gap: 24px!important">
+            <h1 class="display-5 fw-bold row" style="margin-bottom: 10px; width: 100%; text-align: center; display: block">
+                С чего начать?</h1>
+            <div class="examples-data col-md-3">
+                <h4><a onclick="openTgHeader()" type="button" class="btn btn-gray btn-lg">Курс</a></h4>
+                <div class="output" style="height: 80%">
+                    <a style="white-space: pre-line!important; font-size: 20px">С помощью курса из нашего телеграмм бота вы сможете узнать об основах языка Гадюки и его синтаксисе.</a>
+                </div>
+            </div>
+            <div class="examples-data col-md-3">
+                <h4><a onclick="window.location = 'https://gaduka-docs.readthedocs.io/'" type="button" class="btn btn-gray btn-lg">Документация</a></h4>
+                <div class="output" style="height: 80%">
+                    <a style="white-space: pre-line!important; font-size: 20px">В документации подробно описаны все команды Гадюки. Рекомендуем сначала изучить основы Гадюки.</a>
+                </div>
+            </div>
+            <div class="examples-data col-md-3">
+                <h4><a href="/login" type="button" class="btn btn-gray btn-lg">Войти в аккаунт</a></h4>
+                <div class="output" style="height: 80%">
+                    <a style="white-space: pre-line!important; font-size: 20px">На сайте можно зарегистрироваться с помощью Telegram. Вы сможете сохранять проекты и делиться с ними другими людьми.</a>
+                </div>
+            </div>
         </div>
     </section>
 </div>

@@ -55,7 +55,7 @@ header {
     height: 60vh;
 }
 
- #examples .container.bg-body-tertiary {
+ .examples .container.bg-body-tertiary {
     margin-top: -5vh!important;
     height: 75vh;
  }
@@ -239,12 +239,36 @@ header {
     max-height: 35vh;
 }
 
-@media (max-width: 770px) {
+#enjoy-gaduka .bg-body-tertiary {
+    overflow: scroll;
+    height: 75%;
+    margin-top: 40px;
+}
 
-    #examples .container {
+#enjoy-gaduka .examples-data h4{
+    text-align: center
+}
+
+#enjoy-gaduka .examples-data h4 a{
+    height: 48px;
+    width: 100%;
+    --bs-btn-hover-bg: #157347;
+    --bs-btn-active-bg: #0e5033;
+}
+
+#enjoy-gaduka .examples-data div{
+    min-height: 30vh!important;
+}
+
+@media (min-width: 771px) {#examples-small {display: none!important;}  }
+
+@media (max-width: 770px) {
+    #examples-big {display: none!important;}
+
+    .examples .container {
         padding: 1rem!important;
     }
-    #examples div h1{
+    .examples div h1{
         padding: 1rem!important;
     }
     #v-pills-tabContent {
@@ -319,7 +343,6 @@ header {
 }
 
 
-
 @media (max-height: 500px) {
     .index-section .bg-body-tertiary {
         padding: 0!important;
@@ -345,19 +368,19 @@ header {
         width: auto;
     }
 
-    #examples {
+    .examples {
         margin-top: -40px;
     }
 
-    #examples .bg-body-tertiary{
+    .examples .bg-body-tertiary{
         height: 70vh!important;
     }
 
-    #examples .bg-body-tertiary{
+    .examples .bg-body-tertiary{
         margin: 0.2rem!important;
     }
 
-    #examples .bg-body-tertiary h1{
+    .examples .bg-body-tertiary h1{
         font-size: 25px!important;
         margin: 0.2rem!important;
         padding: 0.2rem!important;

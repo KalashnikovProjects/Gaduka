@@ -16,6 +16,10 @@ import hashlib
 import hmac
 import config
 from flask_site_host.code_examples import EXAMPLES
+import logging
+
+logging.basicConfig(filename="logs.log", format="%(asctime)s %(levelname)s %(name)s %(message)s",
+                    level=logging.DEBUG)
 
 
 app = Flask(__name__)
