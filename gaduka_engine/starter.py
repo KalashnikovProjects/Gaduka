@@ -25,7 +25,7 @@ def run_from_api(code, images_json):
     procc = Process(target=compile_and_run_and_get_result,
                     args=(code, imgs, return_queue))
     procc.start()
-    TIMEOUT = 1.5
+    TIMEOUT = 10
     start = time.time()
     while time.time() - start <= TIMEOUT:
         try:
