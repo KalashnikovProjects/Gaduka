@@ -7,3 +7,4 @@ Flask~=2.2.3
 flask-restful
 flask-login
 flask-wtf
+sqlalchemy-serializer
