@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+Pillow = "*"
+SQLAlchemy = "*"
+Werkzeug = "*"
+WTForms = "*"
+Flask = "*"
+flask-restful = "*"
+flask-login = "*"
+flask-wtf = "*"
+sqlalchemy-serializer = "*"
+
+[requires]
+python_version = "3.9"
