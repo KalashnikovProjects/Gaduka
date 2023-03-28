@@ -9,7 +9,7 @@ import time
 import traceback as tr
 from io import BytesIO
 from multiprocessing import Process, Queue
-from config import TIMEOUT_RUN_GADUKA
+TIMEOUT_RUN_GADUKA = 5
 
 from . import compiler
 from PIL import Image

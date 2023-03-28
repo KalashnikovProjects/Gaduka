@@ -1,7 +1,5 @@
 import os
 from datetime import timedelta
-
-import config
 from gaduka_engine import starter
 
 from flask import Flask, request, jsonify, abort
@@ -31,6 +29,11 @@ class GadukaRunCodeApi(Resource):
         #     abort(403, message=f"Доступ к API без токена запрещён")
         result = run_with_json_images_input(args['code'], args['images'])
         return jsonify(result)
+
+
+@app.route("/")
+def no_sleep():
+    return "Это api доступно по адресу /api/v1/engine"
 
 
 api.add_resource(GadukaRunCodeApi, "/api/v1/engine")
