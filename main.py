@@ -6,5 +6,4 @@ Flask бекенд сайта
 
 from flask_site_host.flask_server import main
 
-if __name__ == '__main__':
-    main()
+app = main()
