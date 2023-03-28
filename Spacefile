@@ -5,3 +5,4 @@ micros:
     src: .
     engine: python3.9
     primary: true
+    dev: .venv/bin/uvicorn main:app --reload
