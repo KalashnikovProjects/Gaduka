@@ -1,0 +1,10 @@
+requests~=2.25.1
+Pillow~=9.0.1
+SQLAlchemy~=2.0.6
+Werkzeug~=2.2.3
+WTForms~=3.0.1
+Flask~=2.2.3
+flask-restful
+flask-login
+flask-wtf
+sqlalchemy-serializer
