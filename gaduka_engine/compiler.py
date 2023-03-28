@@ -1,5 +1,4 @@
 import re
-from copy import copy
 
 from PIL import Image
 
