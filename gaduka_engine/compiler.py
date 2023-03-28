@@ -186,7 +186,7 @@ def get_exec_funcs():
         "тип": gaduka_type,
         "изображение": GadukaImage
     }
-    return a | b
+    return {**a, **b}
 
 
 class GadukaException(Exception):
