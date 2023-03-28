@@ -3,6 +3,12 @@
 # Exit early on errors
 set -eu
 
+git clone https://github.com/python/cpython/ -b v3.9.16
+
+cd cpython
+./configure --enable-optimizations --prefix=$HOME/python3.9
+
+
 # Python buffers stdout. Without this, you won't see what you "print" in the Activity Logs
 export PYTHONUNBUFFERED=true
 
