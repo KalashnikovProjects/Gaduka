@@ -3,7 +3,8 @@ API
 Flask бекенд сайта
 Телеграмм бот
 """
+import os
 
-from flask_site_host.flask_server import main
+from api import app
 
-app = main()
+app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))

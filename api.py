@@ -34,4 +34,3 @@ class GadukaRunCodeApi(Resource):
 
 
 api.add_resource(GadukaRunCodeApi, "/api/v1/engine")
-app.run(port=config.PORT, host='127.0.0.1')
