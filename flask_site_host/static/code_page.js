@@ -30,7 +30,7 @@ async function run() {
                         "images": images};
         $.ajax({
         type : "POST",
-        url : "/api/v1/engine",
+        url : "https://sulky-purple-numeric.glitch.me/api/v1/engine",
         data: JSON.stringify(newData),
         dataType:"json",
         contentType:"application/json",
