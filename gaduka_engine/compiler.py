@@ -11,12 +11,12 @@ from PIL import Image
 PASS_COMMAND = 'заглушка'
 LINE_BREAK_CHARACTER = "-"
 COMMENT_CHARACTER = "#"
-PROHIBITION_WORDS = ('eval', "exec", "PIL", "os", "sys", "Image", 'exit', "import",
+PROHIBITION_WORDS = ('eval', "exec", "PIL", "os", "sys", "Image", 'exit', "import", "lambda",
                      "ImageDraw", "ImageFont", 'compiler_data', 'ImageFilter', "del",
                      "return", "assert", "nonlocal", "global", "super", 'quit', 'raise')
 
 TYPES = {"list": "список", "str": "строка", "int": "число", "bool": "логический",
-         "dict": "список", "tuple": "неизменяемый список", "set": "множество",
+         "dict": "словарь", "tuple": "неизменяемый список", "set": "множество",
          "function": "функция", "float": "число", "NoneType": 'ничего'}
 
 
@@ -106,9 +106,9 @@ class GadukaStr(str):
 
 
 class GadukaImage(Image.Image):
-    '''
+    """
     Переопределённый унаследованный класс Изображений из Pillow
-    '''
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -455,7 +455,7 @@ def pre_code() -> list:
 
 
 def compile_code(code: list, pre_code_py_commands: list = ()) -> tuple[list, dict]:
-    # Принимает список строк кода на Гадюке
+    # Принимает список строк кода на Гадюке.
     # Возвращает код на Питоне (потом выполняется через exec())
     full_line: str = ''
     compiled_code: list = pre_code()
@@ -502,7 +502,7 @@ def compile_code(code: list, pre_code_py_commands: list = ()) -> tuple[list, dic
 
     if full_line:
         raise LineBreakError("Ошибка: Последняя строка вашего кода заканчивается символом переноса строки"
-                             "Возможно вы случайно поставили лишний символ или незакончили свой код.")
+                             "Возможно вы случайно поставили лишний символ или не закончили свой код.")
 
     return compiled_code, compiled_to_not_compiled_match
 
@@ -511,14 +511,18 @@ def compile_line(line: str, line_num=0) -> str:
     if line == PASS_COMMAND:
         return "pass"
 
-    if not (line):
+    if not line:
         return ""
+
+    if line.endswith(";"):
+        raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{line} \n"
+                                 f"В Гадюке, в отличии от многих других языков, не нужно ставить ';' в конце строки.")
 
     # Возвращает ту же строчку, но на python
     sussy_baka = "   ".join(re.findall(r"""f".*\{.*?}.*"|f'.*\{.*?}.*'""", line))
     structure_finder = re.sub(r"""".*?"|'.*?'""", 'text', line)
-    # заменяет строки в ковычках на text,
-    # что бы игнорировать то что написано в ковычках
+    # заменяет строки в кавычках на text,
+    # что бы игнорировать то что написано в кавычках
 
     """
     Проверка на содержание технических названий в коде
@@ -616,8 +620,8 @@ def get_command(gaduka_command: str, line_num) -> str:
     for i in args:
         if i == "," and brackets_count == 0 and not quote_count:
             if "=" in a:
-                result = re.findall(r'''(["'].+?["']|[^=]+)''', a)
-                kwargs[result[0].strip()] = result[1].strip()
+                result = re.findall(r'''(["']+?["']|[^=]+)''', a)
+                kwargs[result[0].strip()] = "".join(result[1:]).strip()
             else:
                 kwargs[a.strip()] = True
             a = ""
@@ -634,12 +638,13 @@ def get_command(gaduka_command: str, line_num) -> str:
             elif quote_count is None:
                 quote_count = i
     if "=" in a:
-        result = re.findall(r'''(["'].+?["']|[^=]+)''', a)
-        kwargs[result[0].strip()] = result[1].strip()
+        result = re.findall(r'''(["']+["']|[^=]+)''', a)
+        kwargs[result[0].strip()] = "".join(result[1:]).strip()
     else:
         kwargs[a.strip()] = True
     # kwargs = {i.split("=")[0].strip(): i.split("=")[1].strip() for i in args.split(", ")}
 
+    print(kwargs, a)
     if command not in COMMANDS:
         raise FuncNotExist(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
                            f"Команды с именем '{command}' не существует.")
