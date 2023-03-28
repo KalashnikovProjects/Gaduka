@@ -1,3 +1,4 @@
+import random
 import re
 
 from PIL import Image
@@ -166,8 +167,10 @@ def get_exec_funcs():
         "число": int,
         "длина": len,
         "список": list,
-        "наибольшее_значение": max,
-        "наименьшее_значение": min,
+        "наибольшее": max,
+        "наименьшее": min,
+        "случайное_число": random.randint,
+        "случайный_элемент": random.choice,
         "корень": pow,
         "округлить": round,
         "множество": set,
@@ -233,7 +236,7 @@ class ToPythonCommands:
             kwargs["соединитель"] = "' '"
         if "переменная" not in kwargs:
             kwargs["переменная"] = kwargs["список"]
-        return f'{kwargs["переменная"]} = {kwargs["соединитель"]}.join({kwargs["список"]})'
+        return f'{kwargs["переменная"]} = {kwargs["соединитель"]}.join([str(i) for i in {kwargs["список"]}])'
 
     @staticmethod
     def str_split(kwargs):
@@ -370,14 +373,13 @@ class ToPythonCommands:
     Функции нейросети
     отменены
     """
-
-    @staticmethod
-    def generate_text(kwargs):
-        ...
-
-    @staticmethod
-    def learn_text(kwargs):
-        ...
+    # @staticmethod
+    # def generate_text(kwargs):
+    #     ...
+    #
+    # @staticmethod
+    # def learn_text(kwargs):
+    #     ...
 
     """
     Другие функции
