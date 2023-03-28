@@ -19,6 +19,11 @@ TYPES = {"list": "список", "str": "строка", "int": "число", "bo
          "dict": "словарь", "tuple": "неизменяемый список", "set": "множество",
          "function": "функция", "float": "число", "NoneType": 'ничего'}
 
+def removeprefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text
+
 
 def pre_funcs():
     return f"""class compiler_data: pass
@@ -538,28 +543,28 @@ def compile_line(line: str, line_num=0) -> str:
         """ 
         цикл for
         """
-        count = line.removeprefix("повтор ").rstrip(" раз:")
+        count = removeprefix(line, "повтор ").rstrip(" раз:")
         return f"for номер_повтора in диапазон({count}):"
 
     elif re.fullmatch("повтор пока .+:", structure_finder):
         """ 
         цикл while
         """
-        condition = line.removeprefix("повтор пока ").rstrip(":")
+        condition = removeprefix(line, "повтор пока ").rstrip(":")
 
         return f"while {condition}:"
     elif re.fullmatch("если .+:", structure_finder):
         """ 
         условие if 
         """
-        condition = line.removeprefix("если ").rstrip(":")
+        condition = removeprefix(line, "если ").rstrip(":")
         return f"if {condition}:"
 
     elif re.fullmatch("иначе если .+:", structure_finder):
         """ 
         условие elif 
         """
-        condition = line.removeprefix("иначе если ").rstrip(":")
+        condition = removeprefix(line, "иначе если ").rstrip(":")
         return f"elif {condition}:"
 
     elif re.fullmatch("иначе:", structure_finder):
