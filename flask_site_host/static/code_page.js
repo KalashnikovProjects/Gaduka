@@ -33,6 +33,7 @@ async function run() {
         url : "https://sulky-purple-numeric.glitch.me/api/v1/engine",
         data: JSON.stringify(newData),
         dataType:"json",
+        crossDomain: true,
         contentType:"application/json",
         success: function(result) {
              text_output = result['result_text']

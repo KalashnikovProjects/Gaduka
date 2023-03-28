@@ -644,7 +644,6 @@ def get_command(gaduka_command: str, line_num) -> str:
         kwargs[a.strip()] = True
     # kwargs = {i.split("=")[0].strip(): i.split("=")[1].strip() for i in args.split(", ")}
 
-    print(kwargs, a)
     if command not in COMMANDS:
         raise FuncNotExist(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
                            f"Команды с именем '{command}' не существует.")
