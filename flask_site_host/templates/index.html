@@ -39,7 +39,7 @@
         <div class="container justify-content-center content-section bg-body-tertiary rounded-3 p-5"
              style="padding-bottom: 0.5rem!important; padding-right: 0.5rem!important;">
         <h1 class="display-5 fw-bold" style="text-align: center; margin-bottom: 40px; padding-left: 0!important; margin-left: -10px">Примеры кода на Гадюке</h1>
-        <div class="d-flex align-items-start" style="height: 60vh">
+        <div class="d-flex align-items-start">
             <div class="nav nav-tabs flex-column examples-tabs" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                 {% for example in examples %}
                 <button class="btn btn-gray {% if loop.first %} active {% endif %}" data-bs-toggle="pill" data-bs-target="#example-{{ loop.index }}" type="button" role="tab" aria-controls="example-{{ loop.index }}" aria-selected="true">{{ example.name }}</button>
@@ -74,7 +74,7 @@
         <div class="container justify-content-center content-section bg-body-tertiary rounded-3 p-5"
              style="padding-bottom: 0.5rem!important; padding-right: 0.5rem!important;">
         <h1 class="display-7 fw-bold" style="padding-top: 5px!important; text-align: center; margin-bottom: 10px; padding-left: 0!important; margin-left: -10px">Примеры кода на Гадюке</h1>
-        <div class="align-items-center" style="height: 50vh">
+        <div class="align-items-center">
             <ul class="nav nav-pills mb-3 examples-tabs" id="v-pills-tab" role="tablist" aria-orientation="horizontal">
                 {% for example in examples %}
                     <li class="nav-item" role="presentation"><button class="btn btn-gray {% if loop.first %} active {% endif %}" data-bs-toggle="pill" data-bs-target="#example-{{ loop.index }}-l" type="button" role="tab" aria-controls="example-{{ loop.index }}-l" aria-selected="true">{{ example.name }}</button></li>

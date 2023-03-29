@@ -10,6 +10,7 @@
 /*}*/
 
 header {
+    width: 100%!important;
     position: sticky;
     top: 0;
     z-index: 2;
@@ -198,8 +199,6 @@ header {
 }
 
 .examples-tab-div-1.show{
-    overflow: auto;
-    height: 50vh!important;
     grid-gap: 16px!important;;
     display: grid!important;
 }
@@ -230,6 +229,10 @@ header {
     height: 80%;
 }
 
+.examples div.align-items-center {
+    height: 80%;
+    overflow: auto;
+}
 
 .examples-data div::-webkit-scrollbar-thumb {
     background-color: #3f4247;
@@ -269,7 +272,8 @@ header {
         padding: 1rem!important;
     }
     .examples div h1{
-        padding: 1rem!important;
+        padding: 0!important;
+        padding-bottom: 0.5rem!important;
     }
     #v-pills-tabContent {
         margin: 0!important;
@@ -277,14 +281,20 @@ header {
     }
 }
 
-
-@media (max-width: 445px) {
-    header {
-        justify-content: center!important;
+@media (max-width: 460px) {
+    header.p-3 {
+        padding: 0!important;
+        padding-top: 15px!important;
+        padding-bottom: 15px!important;
     }
 
-    #nav-right {
-        margin-top: 20px;
+    header div a img{
+        margin-left: 1em!important;
+        margin-right: 0.6em!important;
+    }
+
+    header button.btn {
+        margin-right: 0.5em!important;
     }
 }
 
@@ -302,11 +312,10 @@ header {
     }
 
     #description .description-block {
-            width: 100%;
+        width: 100%;
     }
 
     form .col-sm-6, .col-sm-4, .col-sm-2 {
-        min-width: 450px;
         width: 100%!important;
     }
 
@@ -344,6 +353,7 @@ header {
 
 
 @media (max-height: 500px) {
+
     .index-section .bg-body-tertiary {
         padding: 0!important;
     }

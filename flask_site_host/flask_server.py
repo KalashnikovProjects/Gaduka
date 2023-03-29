@@ -194,7 +194,6 @@ def main():
         db_session.global_init("db/main_gaduka.db")
     else:
         db_session.global_init("flask_site_host/db/main_gaduka.db")
-    api.add_resource(gaduka_api.GadukaRunCodeApi, "/api/v1/engine")
     api.add_resource(database_api.UsersListResource, "/api/v1/users")
     api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
     api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
