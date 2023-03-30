@@ -561,6 +561,10 @@ def compile_line(line, line_num=0):
         raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{line} \n"
                                  f"В Гадюке, в отличии от многих других языков, не нужно ставить ';' в конце строки.")
 
+
+    for i in WORDS_FOR_REPLACE.items():
+        line = super_replace(line, i[0], i[1])
+
     # Возвращает ту же строчку, но на python
     sussy_baka = "   ".join(re.findall(r"""f".*\{.*?}.*"|f'.*\{.*?}.*'""", line))
     structure_finder = re.sub(r"""".*?"|'.*?'""", 'text', line)
@@ -576,6 +580,7 @@ def compile_line(line, line_num=0):
                                        f"Некоторые названия нельзя использовать в своей программе:\n" +
                                        ", ".join(PROHIBITION_WORDS) + "\n"
                                                                       f"В вашей программе используется название '{i}'.")
+
 
     if re.fullmatch("повтор .+ раз:", structure_finder):
         """ 
