@@ -27,7 +27,8 @@ def removeprefix(text, prefix):
 
 def pre_funcs():
     return f"""class compiler_data: pass
-global ImageDraw
+global ImageDraw, ImageFont, ImageFilter
+
 def a(to, where, color, text):
     class compiler_data: pass
     compiler_data.draw = ImageDraw.Draw(to)
