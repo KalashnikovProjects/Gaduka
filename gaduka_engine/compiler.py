@@ -19,6 +19,7 @@ TYPES = {"list": "список", "str": "строка", "int": "число", "bo
          "dict": "словарь", "tuple": "неизменяемый список", "set": "множество",
          "function": "функция", "float": "число", "NoneType": 'ничего'}
 
+
 def removeprefix(text, prefix):
     if text.startswith(prefix):
         return text[len(prefix):]
@@ -28,11 +29,10 @@ def removeprefix(text, prefix):
 def pre_funcs():
     return f"""class compiler_data: pass
 global ImageDraw, ImageFont, ImageFilter
-
 def a(to, where, color, text):
     class compiler_data: pass
     compiler_data.draw = ImageDraw.Draw(to)
-    compiler_data.font = ImageFont.truetype("arial.ttf", 50, encoding='UTF-8')
+    compiler_data.font = ImageFont.truetype("Pillow/Tests/fonts/DejaVuSans.ttf", size=50)
     compiler_data.w, compiler_data.h = compiler_data.draw.textsize(text, font=compiler_data.font)
     compiler_data.place = list(where)
     compiler_data.place[0] = compiler_data.place[0] * to.width - compiler_data.w // 2
@@ -84,7 +84,7 @@ def a(to, where, rad, wide, abc1):
                                 (where[1] - rad) * to.height,
                                 (where[0] + rad) * to.width,
                                 (where[1] + rad) * to.height,)
-                                
+
     compiler_data.draw.ellipse(compiler_data.li, width=wide, **abc1)
 compiler_data.circle_to_img = a
 
@@ -95,10 +95,11 @@ def a(to, where, height, width, wide, abc1):
                             where[1] * to.height,
                             (where[0] + width) * to.width,
                             (where[1] + height) * to.height,)
-    
+
     compiler_data.draw.rectangle(compiler_data.li, width=wide, **abc1)\n
 compiler_data.rect_to_img = a
 """
+
 
 class GadukaStr(str):
     def __new__(cls, *args, **kwargs):
@@ -115,6 +116,7 @@ class GadukaImage(Image.Image):
     """
     Переопределённый унаследованный класс Изображений из Pillow
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -280,20 +282,20 @@ class ToPythonCommands:
         if "ширина" not in kwargs:
             kwargs["ширина"] = '2'
 
-        return f"""compiler_data.line_to_img({kwargs['куда']}, {kwargs['точки']}, {kwargs["цвет"], {kwargs["ширина"]}})"""
+        return f"""compiler_data.line_to_img({kwargs['куда']}, {kwargs['точки']}, {kwargs["цвет"]}, {kwargs["ширина"]})"""
 
     @staticmethod
     def paste_circle_to_image(kwargs):
         if "ширина_обводки" not in kwargs:
             kwargs["ширина_обводки"] = '2'
         if "цвет" not in kwargs and "обводка" not in kwargs:
-            a = '{outline: "black"}'
+            a = '{"outline": "black"}'
         elif "цвет" not in kwargs:
-            a = f'{"{"}outline: {kwargs["обводка"]}{"}"}'
+            a = f'{"{"}"outline": {kwargs["обводка"]}{"}"}'
         elif "обводка" not in kwargs:
-            a = f'{"{"}fill: {kwargs["цвет"]}{"}"}'
+            a = f'{"{"}"fill": {kwargs["цвет"]}{"}"}'
         else:
-            a = f'{"{"}fill: {kwargs["цвет"]}, outline: {kwargs["обводка"]}{"}"}'
+            a = f'{"{"}"fill": {kwargs["цвет"]}, "outline": {kwargs["обводка"]}{"}"}'
 
         return f"""compiler_data.circle_to_img({kwargs['куда']}, {kwargs['центр']}, {kwargs['радиус']}, {kwargs["ширина_обводки"]}, abc1={a})"""
 
@@ -460,7 +462,7 @@ def pre_code():
     return commands
 
 
-def compile_code(code, pre_code_py_commands = ()):
+def compile_code(code, pre_code_py_commands=()):
     # Принимает список строк кода на Гадюке.
     # Возвращает код на Питоне (потом выполняется через exec())
     full_line: str = ''
@@ -538,7 +540,7 @@ def compile_line(line, line_num=0):
             raise ProhibitionWordError(f"Ошибка в строке номер {line_num}: \n{line} \n"
                                        f"Некоторые названия нельзя использовать в своей программе:\n" +
                                        ", ".join(PROHIBITION_WORDS) + "\n"
-                                       f"В вашей программе используется название '{i}'.")
+                                                                      f"В вашей программе используется название '{i}'.")
 
     if re.fullmatch("повтор .+ раз:", structure_finder):
         """ 
@@ -650,7 +652,6 @@ def get_command(gaduka_command, line_num):
         kwargs[a.strip()] = True
     # kwargs = {i.split("=")[0].strip(): i.split("=")[1].strip() for i in args.split(", ")}
 
-    print(kwargs, a)
     if command not in COMMANDS:
         raise FuncNotExist(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
                            f"Команды с именем '{command}' не существует.")
