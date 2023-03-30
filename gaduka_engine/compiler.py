@@ -6,6 +6,8 @@ from PIL import Image
 """
 Для определения типа строки (выполнение функции, задание значения переменной, запуск цикла и т.д.)
 используются регулярные выражения
+
+У некоторых функций аргументы названы на русском, эти функции можно вызывать напрямую из языка
 """
 
 PASS_COMMAND = 'заглушка'
@@ -161,10 +163,22 @@ def gaduka_type(obj):
     return types_to_ru.get(type(obj), f"Объект класса {obj.__class__}")
 
 
+def all_elements(список, соединитель=" "):
+    return соединитель.join([str(i) for i in список])
+
+
+def split_string(строка, разделитель=None):
+    if разделитель:
+        return строка.split(разделитель)
+    else:
+        return строка.split()
+
+
 def get_exec_funcs():
     a = {i: 'trollface' for i in ('eval', 'exit', 'super', 'quit', 'exec', 'os')}
     b = {
         "__builtins__": {"__import__": __import__},
+        "ничего": None,
         "диапазон": range,
         "модуль": abs,
         "все": all,
@@ -187,7 +201,9 @@ def get_exec_funcs():
         "сумма": sum,
         "кортеж": tuple,
         "тип": gaduka_type,
-        "изображение": GadukaImage
+        "изображение": GadukaImage,
+        "разделить_строку": split_string,
+        "все_элементы": all_elements
     }
     return {**a, **b}
 
@@ -237,24 +253,25 @@ class ToPythonCommands:
     def list_extend(kwargs):
         return f'{kwargs["список"]}.extend({kwargs["элементы"]})'
 
-    @staticmethod
-    def list_join(kwargs):
 
-        if "соединитель" not in kwargs:
-            kwargs["соединитель"] = "' '"
-        if "переменная" not in kwargs:
-            kwargs["переменная"] = kwargs["список"]
-        return f'{kwargs["переменная"]} = {kwargs["соединитель"]}.join([str(i) for i in {kwargs["список"]}])'
-
-    @staticmethod
-    def str_split(kwargs):
-        if "переменная" not in kwargs:
-            kwargs["переменная"] = kwargs["строка"]
-
-        if "разделитель" not in kwargs:
-            return f'{kwargs["переменная"]} = {kwargs["строка"]}.split()'
-
-        return f'{kwargs["переменная"]} = {kwargs["строка"]}.split({kwargs["разделитель"]})'
+    # Устаревшие варианты
+    # @staticmethod
+    # def list_join(kwargs):
+    #     if "соединитель" not in kwargs:
+    #         kwargs["соединитель"] = "' '"
+    #     if "переменная" not in kwargs:
+    #         kwargs["переменная"] = kwargs["список"]
+    #     return f'{kwargs["переменная"]} = {kwargs["соединитель"]}.join([str(i) for i in {kwargs["список"]}])'
+    #
+    # @staticmethod
+    # def str_split(kwargs):
+    #     if "переменная" not in kwargs:
+    #         kwargs["переменная"] = kwargs["строка"]
+    #
+    #     if "разделитель" not in kwargs:
+    #         return f'{kwargs["переменная"]} = {kwargs["строка"]}.split()'
+    #
+    #     return f'{kwargs["переменная"]} = {kwargs["строка"]}.split({kwargs["разделитель"]})'
 
     @staticmethod
     def dict_remove(kwargs):
@@ -409,8 +426,6 @@ COMMANDS = {
     "убрать элемент": ToPythonCommands.list_remove,
     "удалить элемент": ToPythonCommands.list_delete,
     "расширить список": ToPythonCommands.list_extend,
-    "все элементы": ToPythonCommands.list_join,
-    "разделить строку": ToPythonCommands.str_split,
     "удалить ключ": ToPythonCommands.dict_remove,
 
     "наложить текст": ToPythonCommands.paste_text_to_image,
