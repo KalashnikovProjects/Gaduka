@@ -432,7 +432,7 @@ COMMANDS = {
 }
 
 
-def pre_code() -> list:
+def pre_code():
     gaduka_pre_code_vars = {'левый_верхний_угол': (0.05, 0.05),
                             'правый_верхний_угол': (0.95, 0.05),
                             'левый_нижний_угол': (0.05, 0.95),
@@ -459,7 +459,7 @@ def pre_code() -> list:
     return commands
 
 
-def compile_code(code: list, pre_code_py_commands: list = ()) -> tuple[list, dict]:
+def compile_code(code, pre_code_py_commands = ()):
     # Принимает список строк кода на Гадюке.
     # Возвращает код на Питоне (потом выполняется через exec())
     full_line: str = ''
@@ -512,7 +512,7 @@ def compile_code(code: list, pre_code_py_commands: list = ()) -> tuple[list, dic
     return compiled_code, compiled_to_not_compiled_match
 
 
-def compile_line(line: str, line_num=0) -> str:
+def compile_line(line, line_num=0):
     if line == PASS_COMMAND:
         return "pass"
 
@@ -603,12 +603,12 @@ def compile_line(line: str, line_num=0) -> str:
                                  f"В оформлении строки есть ошибка.")
 
 
-def get_func(gaduka_command: str, line_num) -> str:
+def get_func(gaduka_command, line_num):
     raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
                              f"В гадюке нет функционала вызова функции у объекта")
 
 
-def get_command(gaduka_command: str, line_num) -> str:
+def get_command(gaduka_command, line_num):
     if len(gaduka_command.split(":")) == 1:
         raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
                                  f"В оформлении строки есть ошибка.")
