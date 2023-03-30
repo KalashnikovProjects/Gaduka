@@ -337,9 +337,6 @@ header {
         .input-title {
             width: 100% !important;
         }
-        textarea.inputcode {
-            font-size: 12px;
-        }
         /*.examples-tabs {*/
         /*    flex-direction: row!important;*/
         /*}*/
