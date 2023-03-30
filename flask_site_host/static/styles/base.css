@@ -253,7 +253,7 @@ header {
 }
 
 #enjoy-gaduka .examples-data h4 a{
-    height: 48px;
+    height: auto;
     width: 100%;
     --bs-btn-hover-bg: #157347;
     --bs-btn-active-bg: #0e5033;
@@ -289,12 +289,17 @@ header {
     }
 
     header div a img{
-        margin-left: 1em!important;
-        margin-right: 0.6em!important;
+        margin-left: 0.5em!important;
+        margin-right: 0.5em!important;
+        height: auto;
+        width: 37px;
     }
 
     header button.btn {
-        margin-right: 0.5em!important;
+        padding: 2px!important;
+        padding-left: 6px!important;
+        padding-right: 6px!important;
+        margin-right: 0.3em!important;
     }
 }
 
@@ -329,6 +334,12 @@ header {
 
 
 @media (max-width: 568px) {
+        .input-title {
+            width: 100% !important;
+        }
+        textarea.inputcode {
+            font-size: 12px;
+        }
         /*.examples-tabs {*/
         /*    flex-direction: row!important;*/
         /*}*/
@@ -348,6 +359,16 @@ header {
         #in_browser .gaduka_img_index {
             height: auto;
             width: 60vw;
+        }
+
+        .continue-data {
+            width: 90% !important;
+            max-width: none;
+            height: auto;
+        }
+
+        .continue-data h4 a.btn-gray {
+            background-color: #1b6d47;
         }
 }
 
