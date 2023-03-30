@@ -226,7 +226,8 @@ def process_exception(e, compiled_code=None, match_compile=None, code=()):
                f'\nНеподходящий тип объекта для этой операции.'
     elif isinstance(e, ValueError):
         l_num, line = get_line()
-
+        if str(e) == "bad transparency mask":
+            return "Произошла ошибка при наложении изображений.\n Возможно, то изображение, которое вы хотите наложить меньше изображения, \nна которое вы хотите его наложить."
         return f'Ошибка в строке номер {l_num}:\n  {line.lstrip()} ' \
                f'\nАргумент имеет недопустимое значение: {e}'
     elif isinstance(e, IndexError):
