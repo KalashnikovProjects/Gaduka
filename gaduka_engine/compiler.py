@@ -412,7 +412,10 @@ class ToPythonCommands:
 
     @staticmethod
     def add_text(kwargs):
-        text = f"строка({', '.join([str(i) for i in list(kwargs.values())])})"
+        if "подробно" in kwargs:
+            text = f"""строка({', '.join([f"f'{i[0]}:  {'{'}{i[1]}{'}'}'" for i in list(kwargs.items()) if str(i[0]) != 'подробно'])})"""
+        else:
+            text = f"строка({', '.join([str(i) for i in list(kwargs.values())])})"
         return f"""итоговый_текст.append({text})"""
 
     @staticmethod
