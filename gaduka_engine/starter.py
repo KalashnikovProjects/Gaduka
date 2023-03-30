@@ -230,7 +230,8 @@ def process_exception(e, compiled_code=None, match_compile=None, code=()):
                f'\nАргумент имеет недопустимое значение: {e}'
     elif isinstance(e, IndexError):
         l_num, line = get_line()
-
+        if l_num == "???":
+            return f'Ошибка! \nПохоже вы прикрепили недостаточно изображений \nдля запуска этого кода.'
         return f'Ошибка в строке номер {l_num}:\n  {line.lstrip()} ' \
                f'\nВ списке нет элемента с таким индексом.'
     elif isinstance(e, MemoryError):
