@@ -270,7 +270,7 @@ class ToPythonCommands:
 
     @staticmethod
     def paste_image_to_image(kwargs):
-        return f"""compiler_data.img_to_img({kwargs['куда']}, {kwargs['где']}, {kwargs["цвет"]}, {kwargs['текст']})"""
+        return f"""compiler_data.img_to_img({kwargs['куда']}, {kwargs['где']}, {kwargs["какую"]})"""
 
     @staticmethod
     def paste_line_to_image(kwargs):
