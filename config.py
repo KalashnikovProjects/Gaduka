@@ -3,7 +3,7 @@ REST_API_TOKENS = ('61jf61LheMHsxVh8v4YhvvXiNSSdVamXBket6sBU', # Токен дл
                    '1XYnMkfokzNQnY1iUfuDZ7w2FXGiyqsV2miTDbt2' # Запасной токен
                     )
 NANONETS_API_TOKEN = 'bd609d8a-c631-11ed-9b9b-169ce9ee681d'
-
+database_server = "http://127.0.0.1:80"
 
 DEFAULT_IMG = 'img/gaduka-icon.png' # Изображение проекта по умолчанию
 PORT = 80  # Не работает при запуске через Gunicorn

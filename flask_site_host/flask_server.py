@@ -11,7 +11,7 @@ from flask_site_host.api_server import gaduka_api, database_api
 from flask_site_host.data import db_session
 from flask_site_host.data.projects import Projects
 from flask_site_host.data.users import User
-
+import requests
 import hashlib
 import hmac
 import config
@@ -28,6 +28,32 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
+class ToClass:
+    def __init__(self, d: dict):
+        self.d = d
+        self.is_authenticated = True
+
+    def get_value(self):
+        return self.d
+
+    def is_active(self):
+        return True
+
+    def get_id(self):
+        return self.d["username"]
+
+    def __getattr__(self, item: str):
+        if item not in ("is_active", "get_id", "d", "get_value", "is_authenticated"):
+            return self.d.get(item)
+        else:
+            return self.__dict__[item]
+
+    def __repr__(self):
+        return repr(self.d)
+
+    def __call__(self, *args, **kwargs):
+        return self.get_value()
+
 @app.errorhandler(404)
 def not_found(error):
     return render_template("error_page.html", error="Такой страницы не существует.")
@@ -40,10 +66,9 @@ def bad_request(_):
 
 @login_manager.user_loader
 def load_user(user_id):
-    db_sess = db_session.create_session()
-    a = db_sess.get(User, user_id)
-    db_sess.close()
-    return a
+    resp = requests.get(f"{config.database_server}/api/v1/users/{user_id}").json()
+    user = ToClass(resp["user"])
+    return user
 
 
 @app.route('/logout')
@@ -60,17 +85,17 @@ def index():
 
 @app.route('/users/<username>')
 def user_page(username):
-    db_sess = db_session.create_session()
 
-    user = db_sess.query(User).filter(User.username == username).first()
-    projects = db_sess.query(Projects).filter(User.username == username).all()
-    if not user:
+    resp = requests.get(f"{config.database_server}/api/v1/users/{username}").json()
+    if "user" not in resp:
         return render_template("error_page.html", error='Такого профиля не существует', title='Такого профиля не существует')
-
+    projects = [ToClass(i) for i in resp['user']['projects']]
     return render_template('user_page.html', user_page_name=username, title=f"Профиль {username}", projects=projects)
 
 
 def check_user(user):
+    # Проверка правильности данных регистрации
+
     d = user.copy()
     del d['hash']
     d_list = []
@@ -91,19 +116,19 @@ def login():
     if not check_user(user_data):
         return bad_request()
 
-    db_sess = db_session.create_session()
-    user = db_sess.query(User).filter(User.id == user_data['id']).first()
-    if not user:
-        user = User(
-            id=user_data['id'],
-            username=user_data['username'],
-            photo_url=user_data['photo_url'],
-            auth_date=user_data['auth_date'],
-        )
-        db_sess.add(user)
-        db_sess.commit()
+    resp = requests.get(f"{config.database_server}/api/v1/users/{user_data['id']}").json()
+    if "user" not in resp:
+        requests.post(f"{config.database_server}/api/v1/users/",
+            json={
+                "id": user_data['id'],
+                "username": user_data['username'],
+                "photo_url": user_data['photo_url'],
+                "auth_date": user_data['auth_date'],
+                'token': config.REST_API_TOKENS[1]
+            })
+        resp = requests.get(f"{config.database_server}/api/v1/users/{user_data['id']}").json()
+    user = ToClass(resp["user"])
     login_user(user, remember=True)
-    db_sess.close()
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
@@ -122,58 +147,68 @@ def run_code():
 @app.route('/create_project', methods=['GET'])
 @login_required
 def create_project():
-    db_sess = db_session.create_session()
-    project = Projects(
-        name="Новый проект",
-        code='',
-        user_id=current_user.id)
-    db_sess.add(project)
-    db_sess.commit()
-    return redirect(f"/projects/{project.id}")
+    project = requests.post(f"{config.database_server}/api/v1/projects",
+                    json={
+                      "name": "Новый проект",
+                      "code": "",
+                      "user_id": current_user.id,
+                      'token': config.REST_API_TOKENS[1]
+                    }).json()
+    pr_id = project["project_id"]
+    return redirect(f"/projects/{pr_id}")
 
 @app.route('/projects/<int:project_id>', methods=['GET', "POST"])
 def projects_page(project_id):
     form = SaveProjectForm()
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        project = db_sess.get(Projects, project_id)
         if form.submit.data:
-            project.name = form.name.data
-            project.code = form.code.data
             if form.images.data:
                 form.images.data.stream.seek(0)
                 a = form.images.data.read()
-                img = str(base64.b64encode(a)).strip("b'")
-                # if check_image(a):
-                project.img = img
-            db_sess.commit()
+                img = str(base64.b64encode(a))[2:-1]
+                print(img)
+                requests.put(f"{config.database_server}/api/v1/projects/{project_id}",
+                             json={
+                                 "name": form.name.data,
+                                 "code": form.code.data,
+                                 "img": img,
+                                 'token': config.REST_API_TOKENS[1]
+                             })
+            else:
+                requests.put(f"{config.database_server}/api/v1/projects/{project_id}",
+                             json={
+                                 "name": form.name.data,
+                                 "code": form.code.data,
+                                 'token': config.REST_API_TOKENS[1]
+                             })
+                project = requests.get(f"{config.database_server}/api/v1/projects/{project_id}").json()
+                print(1, project)
             return '', 204
 
         else:
-            db_sess.delete(project)
-            db_sess.commit()
+            requests.delete(f"{config.database_server}/api/v1/projects/{project_id}",
+                         json={'token': config.REST_API_TOKENS[1]})
             return redirect(f"/users/{current_user.username}")
 
-    db_sess = db_session.create_session()
-
-    project = db_sess.get(Projects, project_id)
-    if not project:
+    project = requests.get(f"{config.database_server}/api/v1/projects/{project_id}").json()
+    if "project" not in project:
         return render_template("error_page.html", error="Такого проекта не существует")
 
-    db_sess.commit()
-    form.name.data = project.name
-    form.code.data = project.code
-    author = project.user.username
-    db_sess.close()
+    print(project)
+    project = project['project']
+    form.name.data = project["name"]
+    form.code.data = project['code']
+    author = project["user"]['username']
     if current_user.is_authenticated and author == current_user.username:
         template = 'my_project_page.html'
     else:
         template = 'project_page.html'
 
-    return render_template(template, title=f'Гадюка проект {project.name}', form=form, author=author)
+    return render_template(template, title=f'Гадюка проект {project["name"]}', form=form, author=author)
 
 
 def check_image(img_url):
+    # Не работает
     # Автомодерация изображений, перед тем, как поставить их на обложку проекта
     url = 'https://app.nanonets.com/api/v2/OCR/Model/353cea12-4dcc-47ee-b139-dd345157b17d/LabelFile/'
 
@@ -195,7 +230,7 @@ def main():
     else:
         db_session.global_init("flask_site_host/db/main_gaduka.db")
     api.add_resource(database_api.UsersListResource, "/api/v1/users")
-    api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
+    api.add_resource(database_api.UsersResource, "/api/v1/users/<user_id>")
     api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
     api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
     if __name__ == "__main__":
