@@ -1,9 +1,5 @@
-""" Отсюда будут запускаться все остальные части проекта такие как:
-API
-Flask бекенд сайта
-Телеграмм бот
-"""
 
-from flask_site_host.flask_server import main
+import os
+from api import app
 
-app = main()
+app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
