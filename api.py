@@ -11,7 +11,7 @@ app = Flask(__name__)
 from flask_cors import  CORS
 rs = CORS(app, resources={r"/api/*": {"origins": "*"}})
 api = Api(app)
-app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+app.config['SECRET_KEY'] = '/mops/delete/up/pack/super214jmi3rg4nsnfaqta/'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
     days=3650
 )
