@@ -7,7 +7,7 @@ from flask_restful import Api
 from flask import Flask, render_template, request, session, make_response, redirect, jsonify, abort, url_for
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required, login_manager
 from flask_site_host.forms.code_page import SaveProjectForm
-from flask_site_host.api_server import gaduka_api
+from flask_site_host.api_server import gaduka_api, database_api
 from flask_site_host.data import db_session
 from flask_site_host.data.projects import Projects
 from flask_site_host.data.users import User
@@ -189,12 +189,15 @@ def check_image(img_url):
 
 
 def main():
-
     if __name__ == "__main__":
         db_session.global_init("db/main_gaduka.db")
     else:
         db_session.global_init("flask_site_host/db/main_gaduka.db")
     api.add_resource(gaduka_api.GadukaRunCodeApi, "/api/v1/engine")
+    api.add_resource(database_api.UsersListResource, "/api/v1/users")
+    api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
+    api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
+    api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
     app.run(port=config.PORT, host='127.0.0.1')
 
 
