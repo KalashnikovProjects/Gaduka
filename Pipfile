@@ -5,14 +5,9 @@ name = "pypi"
 
 [packages]
 requests = "*"
-Pillow = "*"
 SQLAlchemy = "*"
-Werkzeug = "*"
-WTForms = "*"
 Flask = "*"
 flask-restful = "*"
-flask-login = "*"
-flask-wtf = "*"
 sqlalchemy-serializer = "*"
 
 [requires]
