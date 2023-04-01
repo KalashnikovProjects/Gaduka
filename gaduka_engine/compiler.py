@@ -630,7 +630,7 @@ def compile_line(line, line_num=0):
         """
         выполнение команды
         например
-        отправить текст: текст=123
+        добавить текст: текст=123
         """
         return get_command(line, line_num)
 
