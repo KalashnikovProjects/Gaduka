@@ -10,7 +10,7 @@ from PIL import Image
 У некоторых функций аргументы названы на русском, эти функции можно вызывать напрямую из языка
 """
 
-PASS_COMMAND = 'заглушка'
+PASS_COMMANDS = ('заглушка', "...")
 LINE_BREAK_CHARACTER = "-"
 COMMENT_CHARACTER = "#"
 PROHIBITION_WORDS = ('eval', "exec", "PIL", "os", "sys", "Image", 'exit', "import", "lambda",
@@ -551,7 +551,7 @@ def compile_code(code, pre_code_py_commands=()):
 
 
 def compile_line(line, line_num=0):
-    if line == PASS_COMMAND:
+    if line in PASS_COMMANDS:
         return "pass"
 
     if not line:
