@@ -618,6 +618,7 @@ def compile_line(line, line_num=0):
 
     elif re.fullmatch("(?:[\w\[\].]*\.)*\w+\(.*\)", structure_finder):
         """
+        Не реазлизовано
         вызывание функции у переменной
         например
         список.добавить(123)
@@ -633,7 +634,7 @@ def compile_line(line, line_num=0):
         """
         return get_command(line, line_num)
 
-    elif re.fullmatch("[\w\[\]]+ *[!+-/*%><]{0,2}= *.+", structure_finder):
+    elif re.fullmatch("[\w\[\], ]+ *[!+-/*%><]{0,2}= *.+", structure_finder):
         """
         задание / изменение переменной
         например
