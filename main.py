@@ -1,5 +1,5 @@
 
 import os
-from api import app
+from api import appi
 
-app
+app = appi()

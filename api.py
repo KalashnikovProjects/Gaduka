@@ -26,3 +26,6 @@ api.add_resource(database_api.UsersListResource, "/api/v1/users")
 api.add_resource(database_api.UsersResource, "/api/v1/users/<user_id>")
 api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
 api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
+
+def appi():
+    return app
