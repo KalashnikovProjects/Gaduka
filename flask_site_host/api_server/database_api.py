@@ -120,6 +120,7 @@ class ProjectsResource(Resource):
         abort_if_token_error(args['token'])
 
         for i in set(args.keys()) & set(project_edit_only):
+            print(i)
             project.__setattr__(i, args[i])
 
         session.commit()
