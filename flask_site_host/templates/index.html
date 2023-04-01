@@ -39,7 +39,7 @@
         <div class="container justify-content-center content-section bg-body-tertiary rounded-3 p-5"
              style="padding-bottom: 0.5rem!important; padding-right: 0.5rem!important;">
         <h1 class="display-5 fw-bold" style="text-align: center; margin-bottom: 40px; padding-left: 0!important; margin-left: -10px">Примеры кода на Гадюке</h1>
-        <div class="d-flex align-items-start" style="height: 60vh">
+        <div class="d-flex align-items-start">
             <div class="nav nav-tabs flex-column examples-tabs" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                 {% for example in examples %}
                 <button class="btn btn-gray {% if loop.first %} active {% endif %}" data-bs-toggle="pill" data-bs-target="#example-{{ loop.index }}" type="button" role="tab" aria-controls="example-{{ loop.index }}" aria-selected="true">{{ example.name }}</button>
@@ -74,7 +74,7 @@
         <div class="container justify-content-center content-section bg-body-tertiary rounded-3 p-5"
              style="padding-bottom: 0.5rem!important; padding-right: 0.5rem!important;">
         <h1 class="display-7 fw-bold" style="padding-top: 5px!important; text-align: center; margin-bottom: 10px; padding-left: 0!important; margin-left: -10px">Примеры кода на Гадюке</h1>
-        <div class="align-items-center" style="height: 50vh">
+        <div class="align-items-center">
             <ul class="nav nav-pills mb-3 examples-tabs" id="v-pills-tab" role="tablist" aria-orientation="horizontal">
                 {% for example in examples %}
                     <li class="nav-item" role="presentation"><button class="btn btn-gray {% if loop.first %} active {% endif %}" data-bs-toggle="pill" data-bs-target="#example-{{ loop.index }}-l" type="button" role="tab" aria-controls="example-{{ loop.index }}-l" aria-selected="true">{{ example.name }}</button></li>
@@ -109,19 +109,19 @@
         <div class="container py-5 row row-cols-auto g-3 justify-content-center content-section text-center p-0 mb-5 bg-body-tertiary rounded-3" style="grid-gap: 24px!important">
             <h1 class="display-5 fw-bold row" style="margin-bottom: 10px; width: 100%; text-align: center; display: block">
                 С чего начать?</h1>
-            <div class="examples-data col-md-3">
+            <div class="continue-data examples-data col-md-3">
                 <h4><a onclick="openTgHeader()" type="button" class="btn btn-gray btn-lg">Курс</a></h4>
                 <div class="output" style="height: 80%">
                     <a style="white-space: pre-line!important; font-size: 20px">С помощью курса из нашего телеграмм бота вы сможете узнать об основах языка Гадюки и его синтаксисе.</a>
                 </div>
             </div>
-            <div class="examples-data col-md-3">
+            <div class="continue-data examples-data col-md-3">
                 <h4><a onclick="window.location = 'https://gaduka-docs.readthedocs.io/'" type="button" class="btn btn-gray btn-lg">Документация</a></h4>
                 <div class="output" style="height: 80%">
                     <a style="white-space: pre-line!important; font-size: 20px">В документации подробно описаны все команды Гадюки. Рекомендуем сначала изучить основы Гадюки.</a>
                 </div>
             </div>
-            <div class="examples-data col-md-3">
+            <div class="continue-data examples-data col-md-3">
                 <h4><a href="/login" type="button" class="btn btn-gray btn-lg">Войти в аккаунт</a></h4>
                 <div class="output" style="height: 80%">
                     <a style="white-space: pre-line!important; font-size: 20px">На сайте можно зарегистрироваться с помощью Telegram. Вы сможете сохранять проекты и делиться ими с другими людьми.</a>

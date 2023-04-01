@@ -11,7 +11,7 @@
 {% endif %}
 
 <div class="row row-cols-auto g-3 d-flex justify-content-center" style="margin: 0;">
-  {% for proj in projects %}
+  {% for proj in projects[::-1] %}
     <a href="/projects/{{proj.id}}" class="link-light" style="text-decoration: none">
       <div class="col">
         <div class="card bg-secondary" style="width: 12rem;height: 13rem;background-color: #5e676f!important">
