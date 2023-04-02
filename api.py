@@ -8,10 +8,8 @@ from data import db_session
 
 app = Flask(__name__)
 
-from flask_cors import  CORS
-rs = CORS(app, resources={r"/api/*": {"origins": "*"}})
 api = Api(app)
-app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+app.config['SECRET_KEY'] = "ajgweaybwn$aytgwbkawgtbkagwbtkwgbakugywawg21t27ribi;;5awfa3"
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
     days=3650
 )

@@ -1,4 +1,3 @@
-import os
 
 REST_API_TOKENS = ('61jf61LheMHsxVh8v4YhvvXiNSSdVamXBket6sBU', # Токен для доступа к API, tg бот
                    '1XYnMkfokzNQnY1iUfuDZ7w2FXGiyqsV2miTDbt2')
