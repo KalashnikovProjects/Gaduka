@@ -1,7 +1,8 @@
 import base64
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler, filters
-from config import BOT_TOKEN, REST_API_TOKENS
+from telegram import InputFile
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CallbackQueryHandler, CommandHandler, MessageHandler, filters
+from config import BOT_TOKEN, REST_API_TOKENS, CODE_RUN_API
 import requests
 import datetime
 
@@ -31,7 +32,7 @@ async def start(update, context):
         f'👋 Привет, {user.mention_html()}. Я бот при сайте:'
         f'\n http://gaduka.sytes.net'
         f'\n'
-        f'\n🐍Здесь вы можете как научиться писать код, так и запускать его'
+        f'\n🐍Здесь вы можете как научиться писать код на Гадюке, так и запускать его'
         f'\n'
         f'\n👉 Чтобы узнать больше, введите /help!')
 
@@ -84,9 +85,9 @@ async def menu_command(update, context):
         [InlineKeyboardButton("📂 Создать новый проект", callback_data="create")],
         [InlineKeyboardButton("🚀Быстрый запуск кода", callback_data="run")],
         [InlineKeyboardButton("📚Ваш профиль и ваши проекты", callback_data="profile")],
-        [InlineKeyboardButton("‍🎓Курс и документация", callback_data="dok")],
+        [InlineKeyboardButton("‍🎓Курс и документация", url="https://gaduka-docs.readthedocs.io")],
         [InlineKeyboardButton("‍❓ Помощь", callback_data="help"),
-         InlineKeyboardButton("❗️ О приложении", callback_data="help")]]
+         InlineKeyboardButton("❗️ О приложении", callback_data="about_us")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     # Ответ на команду /menu
@@ -207,7 +208,6 @@ async def create_saving_command(update, context):
 
 async def run_command(update, context):
     user = update.effective_user
-    print(list_of_states[user.id])
 
     # Создание кода
     current_code = "#***Место для вашего кода***"
@@ -230,11 +230,13 @@ async def run_command(update, context):
 
             # Создание кнопок
             keyboard = [
-                [InlineKeyboardButton("✅ Запустить код", callback_data="create")],
-                [InlineKeyboardButton("❗️Удалить проект", callback_data="deletion")]]
+                [InlineKeyboardButton("✅ Запустить код", callback_data="code_running")],
+                [InlineKeyboardButton("❗️Удалить проект",
+                                      callback_data=f"deletion {update.callback_query.data.split()[1]}")]]
         else:
             # Создание кнопок
-            keyboard = [[InlineKeyboardButton("❗️Удалить проект", callback_data="deletion")]]
+            keyboard = [[InlineKeyboardButton("❗️Удалить проект",
+                                              callback_data=f"deletion {update.callback_query.data.split()[1]}")]]
 
     else:
         # Создание состояния редактирования быстрого запуска кода
@@ -247,6 +249,8 @@ async def run_command(update, context):
 
     # Прикрепление кнопок
     reply_markup = InlineKeyboardMarkup(keyboard)
+
+    context.user_data['current_code'] = current_code
 
     # Создание текста
     text_message = \
@@ -270,9 +274,65 @@ async def run_command(update, context):
         await update.message.reply_text(text_message, reply_markup=reply_markup)
 
 
+async def deletion_command(update, context):
+    user = update.effective_user
+
+    requests.delete(f'http://127.0.0.1/api/v1/projects/{update.callback_query.data.split()[1]}',
+                    json={'token': REST_API_TOKENS[0]}).json()
+
+    # Перевод состояния юзера в неактивный режим(не заполняет проект, не создает новый проект)
+    list_of_states[user.id] = 'without_condition'
+    the_naughty_list[user.id] = ''
+    context.user_data['current_code'] = ''
+
+    # Оповещение об удалении
+    await update.callback_query.message.reply_text('✅ Внимание! Ваш проект был успешно удален!'
+                                                   '\n'
+                                                   '\n👉 Чтобы создать новый проект, воспользуйтесь командой /create.'
+                                                   '\n'
+                                                   '\n🫶 Приятного кодинга! 🫶')
+
+
+async def code_run_command(update, context):
+    user = update.effective_user
+
+    keyboard = [
+        [InlineKeyboardButton("📂 Запустить без изображений", callback_data="launch_without_photos")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    # Перевод состояния юзера в неактивный режим(не заполняет проект, не создает новый проект)
+    list_of_states[user.id] = 'the_code_is_up_and_running'
+    the_naughty_list[user.id] = ''
+    # Оповещение о состоянии запуска кода
+    await update.callback_query.message.reply_text('🚀 Запущен код вашего проекта!'
+                                                   '\n'
+                                                   '\n✅ Ваш код успешно запущен,'
+                                                   ' и он готов начать обработку'
+                                                   ' ваших изображений.'
+                                                   '\nПросто отправляйте'
+                                                   ' мне изображения, и они будут обрабатываться в соответствии'
+                                                   ' с вашим кодом.'
+                                                   '\n'
+                                                   '\n❕ Помните, что ваш код может обрабатывать только изображения,'
+                                                   ' и все другие типы сообщений будут игнорироваться.'
+                                                   '\n'
+                                                   '\n⏰ Обработка изображений может занять некоторое время.'
+                                                   ' Пожалуйста, будьте терпеливы и дождитесь завершения'
+                                                   ' процесса обработки.'
+                                                   '\n'
+                                                   '\n👉 Если у вас есть какие-либо вопросы относительно работы кода,'
+                                                   ' обратитесь к нашей команде поддержки.'
+                                                   '\n'
+                                                   '\n❕Для завершения работы кода воспльзуйтесь'
+                                                   ' командой /help или /menu'
+                                                   '\n🫶 Приятного кодинга! 🫶', reply_markup=reply_markup)
+
+
 async def text_echo(update, context):
     user = update.effective_user
     message = update.effective_message
+    chat_id = update.message.chat_id
+
     try:
         # Ответ в случае когда пользователь ничего не делает
         if list_of_states[user.id] == 'without_condition':
@@ -408,8 +468,10 @@ async def text_echo(update, context):
                     keyboard = [
                         [InlineKeyboardButton("📥 Сохранить код",
                                               callback_data=f"create_saving {list_of_states[user.id].split()[1]}")],
-                        [InlineKeyboardButton("✅ Запустить код", callback_data="code_running")],
-                        [InlineKeyboardButton("❗️Удалить проект", callback_data="deletion")]
+                        [InlineKeyboardButton("✅ Запустить код",
+                                              callback_data="code_running")],
+                        [InlineKeyboardButton("❗️Удалить проект",
+                                              callback_data=f"deletion {list_of_states[user.id].split()[1]}")]
                     ]
                 else:
                     # Кнопки в случае если проект еще не создан
@@ -444,6 +506,38 @@ async def text_echo(update, context):
                                                           '\n'
                                                           '\n👍 Я верю, что у тебя это получится и'
                                                           '\n🫶 Приятного кодинга! 🫶')
+        # Ответ при состоянии запущенного кода
+        elif list_of_states[user.id] == 'the_code_is_up_and_running':
+            if message.photo:
+                photo = update.message.photo[-1]
+                file = await context.bot.get_file(photo.file_id)
+                url = file.file_path
+                response = requests.get(url)
+                encoded_content = base64.b64encode(response.content)
+                response = requests.post(f'{CODE_RUN_API}api/v1/engine',
+                                         json={"code": context.user_data['current_code'],
+                                               "images":
+                                                   ['data:image/png;base64,' + encoded_content.decode('utf-8')]}).json()
+                if response["result_imgs"]:
+                    image_data = base64.b64decode(response["result_imgs"][0])
+
+                    # сохраняем файл на диск
+                    with open('image.jpg', 'wb') as f:
+                        f.write(image_data)
+
+                    # отправляем изображение пользователю
+                    with open('image.jpg', 'rb') as f:
+
+                        await context.bot.send_photo(chat_id=chat_id, photo=InputFile(f),
+                                                     caption=f'Итог работы вашего кода'
+                                                             f':\n{response["result_text"]}')
+
+                else:
+                    await update.effective_message.reply_text(f'Итог работы вашего кода:\n{response["result_text"]}')
+            else:
+                pass
+
+
     except KeyError:
         # Ответ в случае когда еще не указано состояние
         await update.effective_message.reply_text('🤖 Я не понимаю, что вы написали, потому что я всего лишь бот.'
@@ -456,14 +550,56 @@ async def text_echo(update, context):
                                                   '\n🫶 Приятного кодинга! 🫶')
 
 
+async def launch_without_photos(update, context):
+    response = requests.post(f'{CODE_RUN_API}api/v1/engine',
+                             json={"code": context.user_data['current_code'],
+                                   "images": []}).json()
+    await update.effective_message.reply_text(f'Итог работы вашего кода:\n{response["result_text"]}')
+
+
+async def about_us_command(update, context):
+    await update.callback_query.message.reply_text("👋Добро пожаловать в @GadukaCodeBot - ваш компаньон"
+                                                   " по кодингу на языке Гадюка! 😊💻👨‍💻"
+                                                   "\n"
+                                                   "\n@GadukaCodeBot - это бот, который помогает"
+                                                   " владеть языком программирования Гадюка,"
+                                                   " начиная от простого синтаксиса и до создания сложных проектов. 🚀🌟"
+                                                   "\n"
+                                                   "\nОдним из основных преимуществ"
+                                                   " бота является возможность запуска кода напрямую💬💻"
+                                                   "\n"
+                                                   "\nНо это еще не все!  предлагает создание непубличных"
+                                                   " проектов 🙊, в которых вы можете сохранять свой код в"
+                                                   " удобной форме и в дальнейшем работать над ним."
+                                                   "\n"
+                                                   "\nСинтаксис языка Гадюка легок, но если у вас есть "
+                                                   "вопросы, документация всегда готова ответить на них. 🤔❓"
+                                                   "\n"
+                                                   "\nА если вы новичок в области программирования, "
+                                                   "не волнуйтесь! @GadukaCodeBot имеет возможность обучения "
+                                                   "языку Гадюка прямо в боте. Вы можете получить справочную "
+                                                   "информацию и практиковаться, начиная с основ и до более "
+                                                   "сложных задач. 📚👨‍🎓💡"
+                                                   "\n"
+                                                   "\nС @GadukaCodeBot ваш опыт кодинга на Гадюке "
+                                                   "будет простым и удобным. Добро пожаловать в нашего "
+                                                   "бота и начните свое приключение в мире маленьких змей! 🤗🤖🐍")
+
+
 def main():
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CallbackQueryHandler(create_command, pattern="^" + "create" + "$"))
     application.add_handler(CallbackQueryHandler(profile_command, pattern="^" + "profile" + "$"))
     application.add_handler(CallbackQueryHandler(help_command, pattern="^" + "help" + "$"))
+    application.add_handler(CallbackQueryHandler(about_us_command, pattern="^" + "about_us" + "$"))
+    application.add_handler(CallbackQueryHandler(run_command, pattern="^" + "run" + "$"))
+    application.add_handler(CallbackQueryHandler(launch_without_photos, pattern="^" + "launch_without_photos" + "$"))
+    application.add_handler(CallbackQueryHandler(code_run_command, pattern="code_running"))
+    application.add_handler(CallbackQueryHandler(deletion_command, pattern="deletion"))
     application.add_handler(CallbackQueryHandler(run_command, pattern="run_project"))
     application.add_handler(CallbackQueryHandler(create_saving_command, pattern="create_saving"))
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("run", run_command))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("menu", menu_command))
     application.add_handler(CommandHandler("profile", profile_command))
