@@ -17,9 +17,10 @@ PROHIBITION_WORDS = ('eval', "exec", "PIL", "os", "sys", "Image", 'exit', "impor
                      "ImageDraw", "ImageFont", 'compiler_data', 'ImageFilter', "del",
                      "return", "assert", "nonlocal", "global", "super", 'quit', 'raise')
 
-TYPES = {"list": "список", "str": "строка", "int": "число", "bool": "логический",
-         "dict": "словарь", "tuple": "неизменяемый список", "set": "множество",
-         "function": "функция", "float": "число", "NoneType": 'ничего'}
+TYPES = {"list": "список", "str": "строка", "int": "число", "bool": "логический тип",
+         "frozenset": "Неизменяемое множество",
+            "dict": "словарь", "tuple": "неизменяемый список", "set": "множество",
+            "function": "функция", "float": "Десятичная дробь", "NoneType": 'ничего'}
 
 WORDS_FOR_REPLACE = {
     "или": "or",
@@ -173,7 +174,9 @@ def gaduka_type(obj):
         list: "Список",
         tuple: "Неизменяемый список",
         enumerate: "Пронумерованный список",
-        range: "Диапазон"}
+        range: "Диапазон",
+        frozenset: "Неизменяемое множество",
+        type(None): "Ничего"}
 
     if callable(obj):
         return "Функция"

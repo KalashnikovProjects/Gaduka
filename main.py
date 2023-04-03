@@ -3,6 +3,7 @@ API
 Flask бекенд сайта
 Телеграмм бот
 """
+
 import os
 
 from api import app
