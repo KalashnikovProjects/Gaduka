@@ -18,5 +18,5 @@ class Projects(SqlAlchemyBase, SerializerMixin):
     code = sqlalchemy.Column(MEDIUMTEXT, nullable=True, default="")
     img = sqlalchemy.Column(MEDIUMTEXT, nullable=True, default=config.DEFAULT_IMG)
 
-    user_id = sqlalchemy.Column(MEDIUMINT)
-    user = orm.relationship('User')
+    user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
+

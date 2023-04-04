@@ -17,7 +17,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     photo_url = sqlalchemy.Column(MEDIUMTEXT, nullable=True)
     auth_date = sqlalchemy.Column(TINYTEXT, nullable=True)
 
-    projects = orm.relationship("Projects", back_populates='user')
+    projects = orm.relationship("Projects", backref='user')
 
     def __repr__(self):
         return f"{self.username}"
