@@ -4,7 +4,7 @@ import config
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy_serializer import SerializerMixin
-from sqlalchemy.dialects.mysql import INTEGER, MEDIUMTEXT, TINYTEXT, MEDIUMINT
+from sqlalchemy.dialects.mysql import INTEGER, MEDIUMTEXT, TINYTEXT, MEDIUMINT, BIGINT
 
 from .db_session import SqlAlchemyBase
 
@@ -18,5 +18,5 @@ class Projects(SqlAlchemyBase, SerializerMixin):
     code = sqlalchemy.Column(MEDIUMTEXT, nullable=True, default="")
     img = sqlalchemy.Column(MEDIUMTEXT, nullable=True, default=config.DEFAULT_IMG)
 
-    user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
+    user_id = sqlalchemy.Column(BIGINT, sqlalchemy.ForeignKey("users.id"))
 
