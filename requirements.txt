@@ -3,3 +3,4 @@ SQLAlchemy~=2.0.6
 Flask~=2.2.3
 flask-restful
 sqlalchemy-serializer
+mysqlclient
