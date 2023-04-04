@@ -191,9 +191,9 @@ def check_image(img_url):
 def main():
 
     if __name__ == "__main__":
-        db_session.global_init("db/main_gaduka.db")
+        db_session.global_init()
     else:
-        db_session.global_init("flask_site_host/db/main_gaduka.db")
+        db_session.global_init()
     api.add_resource(database_api.UsersListResource, "/api/v1/users")
     api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
     api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
