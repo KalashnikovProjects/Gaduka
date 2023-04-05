@@ -125,7 +125,7 @@ def create_project():
     db_sess = db_session.create_session()
     project = Projects(
         name="Новый проект",
-        code='',
+        code=' ',
         user_id=current_user.id)
     db_sess.add(project)
     db_sess.commit()
