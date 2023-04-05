@@ -1,8 +1,8 @@
 requests~=2.25.1
 Pillow~=9.0.1
-mysql-connector
-mysql-connector-python
-mysqlclient
+mysql-connector==2.2.9
+mysql-connector-python==8.0.32
+mysqlclient==2.1.1
 SQLAlchemy~=2.0.6
 Werkzeug~=2.2.3
 WTForms~=3.0.1
