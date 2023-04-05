@@ -15,7 +15,7 @@ class Projects(SqlAlchemyBase, SerializerMixin):
 
     id = sqlalchemy.Column(MEDIUMINT, primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(TINYTEXT, nullable=True, default="Новый проект")
-    code = sqlalchemy.Column(MEDIUMTEXT, nullable=True, default=" ")
+    code = sqlalchemy.Column(MEDIUMTEXT, nullable=True, default="")
     img = sqlalchemy.Column(MEDIUMTEXT, nullable=True, default=config.DEFAULT_IMG)
 
     user_id = sqlalchemy.Column(BIGINT, sqlalchemy.ForeignKey("users.id"))
