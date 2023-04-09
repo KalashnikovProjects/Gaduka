@@ -586,6 +586,9 @@ async def about_us_command(update, context):
 
 
 def main():
+    from keep_alive import keep_alive
+    keep_alive()
+
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CallbackQueryHandler(create_command, pattern="^" + "create" + "$"))
     application.add_handler(CallbackQueryHandler(profile_command, pattern="^" + "profile" + "$"))
@@ -607,10 +610,5 @@ def main():
     application.run_polling()
 
 
-# Запускаем функцию main() в случае запуска скрипта.
-if __name__ == '__main__':
-    # Словарь состояний конкретного пользователя
-    list_of_states = {}
-    # Словарь для определения того нарушил ли пользователь какое либо правило
-    the_naughty_list = {}
-    main()
+list_of_states = {}
+the_naughty_list = {}

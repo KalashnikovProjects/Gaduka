@@ -8,4 +8,4 @@ CODE_RUN_API = 'https://gaduka.glitch.me/'
 NANONETS_API_TOKEN = 'bd609d8a-c631-11ed-9b9b-169ce9ee681d'
 PORT = 80
 API_SERVER = 'http://127.0.0.1:80/'
-DIAMOND_GOOSE = 'http://127.0.0.1/'
+DIAMOND_GOOSE = 'https://gaduka.sytes.net/'
