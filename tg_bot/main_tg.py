@@ -586,7 +586,7 @@ async def about_us_command(update, context):
 
 
 def main():
-    logging.log(logging.INFO, "Прикол")
+    logging.info("Прикол")
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CallbackQueryHandler(create_command, pattern="^" + "create" + "$"))
     application.add_handler(CallbackQueryHandler(profile_command, pattern="^" + "profile" + "$"))
@@ -605,10 +605,10 @@ def main():
     application.add_handler(CommandHandler("profile", profile_command))
     application.add_handler(CommandHandler("create", create_command))
     application.add_handler(MessageHandler(filters.ALL, text_echo))
-    logging.log(logging.INFO, "2 Прикол")
+    logging.info("2 Прикол")
     application.run_polling()
 
-logging.log(logging.INFO, "0 Прикол")
+logging.info("0 Прикол")
 
 list_of_states = {}
 the_naughty_list = {}
