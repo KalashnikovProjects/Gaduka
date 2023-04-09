@@ -585,8 +585,8 @@ async def about_us_command(update, context):
                                                    "бота и начните свое приключение в мире маленьких змей! 🤗🤖🐍")
 
 
-def main():
-    from keep_alive import keep_alive
+def main(*args, **kwargs):
+    from .keep_alive import keep_alive
     keep_alive()
 
     application = Application.builder().token(BOT_TOKEN).build()
