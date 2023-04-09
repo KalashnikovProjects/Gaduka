@@ -5,4 +5,4 @@ Flask бекенд сайта
 """
 
 from tg_bot.main_tg import main
-app = main
+main()
