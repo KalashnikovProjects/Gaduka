@@ -1,4 +1,4 @@
-var scrollFlag = false;
+$.scrollFlag = false;
 a = $('.index-section');
 var  sectionHeight = a.outerHeight(true) - $("header").height() / 4;
 
@@ -11,14 +11,14 @@ $(window).resize(function(){
 
 document.addEventListener('wheel', function(e){
     e.preventDefault();
-    if (scrollFlag) {
+    if ($.scrollFlag) {
         return
     }
-    scrollFlag = true
+    $.scrollFlag = true
     if(e.deltaY / 120 > 0) {
-        $.smoothScroll({afterScroll: function() { scrollFlag = false }}, `+=${sectionHeight}px`)
+        $.smoothScroll({afterScroll: function() { $.scrollFlag = false }}, `+=${sectionHeight}px`)
     }
     else{
-        $.smoothScroll({afterScroll: function() { scrollFlag = false }}, `-=${sectionHeight}px`)
+        $.smoothScroll({afterScroll: function() { $.scrollFlag = false }}, `-=${sectionHeight}px`)
     }
 }, { passive: false })
