@@ -17,3 +17,6 @@ def run():
 def keep_alive():
     t = Thread(target=run)
     t.start()
+
+# Поставил 2 UptimeRobot'а каждые 5 минут на сайт проекта Glitch,
+# в Glitch если нет запросов в течение 5 минут проект засыпает
