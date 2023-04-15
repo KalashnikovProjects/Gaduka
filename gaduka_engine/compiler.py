@@ -560,6 +560,15 @@ def compile_line(line, line_num=0):
     if not line:
         return ""
 
+    if "#" in line:
+        br_count = 0
+        for n, i in enumerate(line):
+            if i == "#" and br_count % 2 == 0:
+                line = line[:n]
+                break
+            elif i in ("'", '"'):
+                br_count += 1
+
     if line.endswith(";"):
         raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{line} \n"
                                  f"В Гадюке, в отличии от многих других языков, не нужно ставить ';' в конце строки.")
@@ -569,8 +578,9 @@ def compile_line(line, line_num=0):
         line = super_replace(line, i[0], i[1])
 
     # Возвращает ту же строчку, но на python
-    sussy_baka = "   ".join(re.findall(r"""f".*\{.*?}.*"|f'.*\{.*?}.*'""", line))
+    sussy_baka = "   ".join(re.findall(r"""f".*\{.*?}.*"|f'.*\{.*?}.*'""", line)) # Проверка с f строками
     structure_finder = re.sub(r"""".*?"|'.*?'""", 'text', line)
+
     # заменяет строки в кавычках на text,
     # что бы игнорировать то что написано в кавычках
 
@@ -629,7 +639,7 @@ def compile_line(line, line_num=0):
         """
         return line
 
-    elif re.fullmatch("(\w ?)+: (?:\w+ *=? *[\S ]+,? *)+", structure_finder):
+    elif re.fullmatch("(\w ?)+: (?:\w+ *=? *[\S ]+,? *)+\s*", structure_finder):
         """
         выполнение команды
         например
