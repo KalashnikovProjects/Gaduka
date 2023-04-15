@@ -7,7 +7,7 @@ from flask_restful import Api
 from flask import Flask, render_template, request, session, make_response, redirect, jsonify, abort, url_for
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required, login_manager
 from flask_site_host.forms.code_page import SaveProjectForm
-from flask_site_host.api_server import gaduka_api, database_api
+from flask_site_host.api_server import database_api
 from flask_site_host.data import db_session
 from flask_site_host.data.projects import Projects
 from flask_site_host.data.users import User
