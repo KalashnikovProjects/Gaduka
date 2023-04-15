@@ -295,7 +295,7 @@ class ToPythonCommands:
 
     @staticmethod
     def dict_remove(kwargs):
-        return f'{kwargs["список"]}.pop({kwargs["номер"]})'
+        return f'{kwargs["словарь"]}.pop({kwargs["ключ"]})'
 
     """
     Функции вставки объектов на изображение
