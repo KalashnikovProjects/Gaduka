@@ -6,27 +6,53 @@ from PIL import Image
 """
 Для определения типа строки (выполнение функции, задание значения переменной, запуск цикла и т.д.)
 используются регулярные выражения
+
+У некоторых функций аргументы названы на русском, эти функции можно вызывать напрямую из языка
 """
 
-PASS_COMMAND = 'заглушка'
+PASS_COMMANDS = ('заглушка', "...")
 LINE_BREAK_CHARACTER = "-"
 COMMENT_CHARACTER = "#"
 PROHIBITION_WORDS = ('eval', "exec", "PIL", "os", "sys", "Image", 'exit', "import", "lambda",
                      "ImageDraw", "ImageFont", 'compiler_data', 'ImageFilter', "del",
                      "return", "assert", "nonlocal", "global", "super", 'quit', 'raise')
 
-TYPES = {"list": "список", "str": "строка", "int": "число", "bool": "логический",
-         "dict": "словарь", "tuple": "неизменяемый список", "set": "множество",
-         "function": "функция", "float": "число", "NoneType": 'ничего'}
+TYPES = {"list": "список", "str": "строка", "int": "число", "bool": "логический тип",
+         "frozenset": "Неизменяемое множество",
+            "dict": "словарь", "tuple": "неизменяемый список", "set": "множество",
+            "function": "функция", "float": "Десятичная дробь", "NoneType": 'ничего'}
+
+WORDS_FOR_REPLACE = {
+    "или": "or",
+    "и": "and",
+    "в": "in",
+    "не": "not"
+}
+
+
+def super_replace(text, before, after):
+    result = re.finditer(fr'''".*?"|'.*?'|(\b{before}\b)''', text, re.MULTILINE)
+    res = list(text)
+    for match in list(result)[::-1]:
+        if match.group(1):
+            del res[match.start(1): match.end(1)]
+            res.insert(match.start(1), after)
+    return "".join(res)
+
+
+def removeprefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text
 
 
 def pre_funcs():
     return f"""class compiler_data: pass
-global ImageDraw
+global ImageDraw, ImageFont, ImageFilter
 def a(to, where, color, text):
     class compiler_data: pass
     compiler_data.draw = ImageDraw.Draw(to)
-    compiler_data.font = ImageFont.truetype("arial.ttf", 50, encoding='UTF-8')
+    compiler_data.font = ImageFont.truetype("Pillow/Tests/fonts/DejaVuSans.ttf", size=50)
     compiler_data.w, compiler_data.h = compiler_data.draw.textsize(text, font=compiler_data.font)
     compiler_data.place = list(where)
     compiler_data.place[0] = compiler_data.place[0] * to.width - compiler_data.w // 2
@@ -78,7 +104,7 @@ def a(to, where, rad, wide, abc1):
                                 (where[1] - rad) * to.height,
                                 (where[0] + rad) * to.width,
                                 (where[1] + rad) * to.height,)
-                                
+
     compiler_data.draw.ellipse(compiler_data.li, width=wide, **abc1)
 compiler_data.circle_to_img = a
 
@@ -89,10 +115,11 @@ def a(to, where, height, width, wide, abc1):
                             where[1] * to.height,
                             (where[0] + width) * to.width,
                             (where[1] + height) * to.height,)
-    
+
     compiler_data.draw.rectangle(compiler_data.li, width=wide, **abc1)\n
 compiler_data.rect_to_img = a
 """
+
 
 class GadukaStr(str):
     def __new__(cls, *args, **kwargs):
@@ -109,6 +136,7 @@ class GadukaImage(Image.Image):
     """
     Переопределённый унаследованный класс Изображений из Pillow
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -146,17 +174,31 @@ def gaduka_type(obj):
         list: "Список",
         tuple: "Неизменяемый список",
         enumerate: "Пронумерованный список",
-        range: "Диапазон"}
+        range: "Диапазон",
+        frozenset: "Неизменяемое множество",
+        type(None): "Ничего"}
 
     if callable(obj):
         return "Функция"
     return types_to_ru.get(type(obj), f"Объект класса {obj.__class__}")
 
 
+def all_elements(список, соединитель=" "):
+    return соединитель.join([str(i) for i in список])
+
+
+def split_string(строка, разделитель=None):
+    if разделитель:
+        return строка.split(разделитель)
+    else:
+        return строка.split()
+
+
 def get_exec_funcs():
     a = {i: 'trollface' for i in ('eval', 'exit', 'super', 'quit', 'exec', 'os')}
     b = {
         "__builtins__": {"__import__": __import__},
+        "ничего": None,
         "диапазон": range,
         "модуль": abs,
         "все": all,
@@ -179,9 +221,11 @@ def get_exec_funcs():
         "сумма": sum,
         "кортеж": tuple,
         "тип": gaduka_type,
-        "изображение": GadukaImage
+        "изображение": GadukaImage,
+        "разделить_строку": split_string,
+        "все_элементы": all_elements
     }
-    return a | b
+    return {**a, **b}
 
 
 class GadukaException(Exception):
@@ -229,28 +273,29 @@ class ToPythonCommands:
     def list_extend(kwargs):
         return f'{kwargs["список"]}.extend({kwargs["элементы"]})'
 
-    @staticmethod
-    def list_join(kwargs):
 
-        if "соединитель" not in kwargs:
-            kwargs["соединитель"] = "' '"
-        if "переменная" not in kwargs:
-            kwargs["переменная"] = kwargs["список"]
-        return f'{kwargs["переменная"]} = {kwargs["соединитель"]}.join([str(i) for i in {kwargs["список"]}])'
-
-    @staticmethod
-    def str_split(kwargs):
-        if "переменная" not in kwargs:
-            kwargs["переменная"] = kwargs["строка"]
-
-        if "разделитель" not in kwargs:
-            return f'{kwargs["переменная"]} = {kwargs["строка"]}.split()'
-
-        return f'{kwargs["переменная"]} = {kwargs["строка"]}.split({kwargs["разделитель"]})'
+    # Устаревшие варианты
+    # @staticmethod
+    # def list_join(kwargs):
+    #     if "соединитель" not in kwargs:
+    #         kwargs["соединитель"] = "' '"
+    #     if "переменная" not in kwargs:
+    #         kwargs["переменная"] = kwargs["список"]
+    #     return f'{kwargs["переменная"]} = {kwargs["соединитель"]}.join([str(i) for i in {kwargs["список"]}])'
+    #
+    # @staticmethod
+    # def str_split(kwargs):
+    #     if "переменная" not in kwargs:
+    #         kwargs["переменная"] = kwargs["строка"]
+    #
+    #     if "разделитель" not in kwargs:
+    #         return f'{kwargs["переменная"]} = {kwargs["строка"]}.split()'
+    #
+    #     return f'{kwargs["переменная"]} = {kwargs["строка"]}.split({kwargs["разделитель"]})'
 
     @staticmethod
     def dict_remove(kwargs):
-        return f'{kwargs["список"]}.pop({kwargs["номер"]})'
+        return f'{kwargs["словарь"]}.pop({kwargs["ключ"]})'
 
     """
     Функции вставки объектов на изображение
@@ -265,7 +310,7 @@ class ToPythonCommands:
 
     @staticmethod
     def paste_image_to_image(kwargs):
-        return f"""compiler_data.img_to_img({kwargs['куда']}, {kwargs['где']}, {kwargs["цвет"]}, {kwargs['текст']})"""
+        return f"""compiler_data.img_to_img({kwargs['куда']}, {kwargs['где']}, {kwargs["какую"]})"""
 
     @staticmethod
     def paste_line_to_image(kwargs):
@@ -274,20 +319,20 @@ class ToPythonCommands:
         if "ширина" not in kwargs:
             kwargs["ширина"] = '2'
 
-        return f"""compiler_data.line_to_img({kwargs['куда']}, {kwargs['точки']}, {kwargs["цвет"], {kwargs["ширина"]}})"""
+        return f"""compiler_data.line_to_img({kwargs['куда']}, {kwargs['точки']}, {kwargs["цвет"]}, {kwargs["ширина"]})"""
 
     @staticmethod
     def paste_circle_to_image(kwargs):
         if "ширина_обводки" not in kwargs:
             kwargs["ширина_обводки"] = '2'
         if "цвет" not in kwargs and "обводка" not in kwargs:
-            a = '{outline: "black"}'
+            a = '{"outline": "black"}'
         elif "цвет" not in kwargs:
-            a = f'{"{"}outline: {kwargs["обводка"]}{"}"}'
+            a = f'{"{"}"outline": {kwargs["обводка"]}{"}"}'
         elif "обводка" not in kwargs:
-            a = f'{"{"}fill: {kwargs["цвет"]}{"}"}'
+            a = f'{"{"}"fill": {kwargs["цвет"]}{"}"}'
         else:
-            a = f'{"{"}fill: {kwargs["цвет"]}, outline: {kwargs["обводка"]}{"}"}'
+            a = f'{"{"}"fill": {kwargs["цвет"]}, "outline": {kwargs["обводка"]}{"}"}'
 
         return f"""compiler_data.circle_to_img({kwargs['куда']}, {kwargs['центр']}, {kwargs['радиус']}, {kwargs["ширина_обводки"]}, abc1={a})"""
 
@@ -387,7 +432,10 @@ class ToPythonCommands:
 
     @staticmethod
     def add_text(kwargs):
-        text = f"строка({', '.join([str(i) for i in list(kwargs.values())])})"
+        if "подробно" in kwargs:
+            text = f"""строка({', '.join([f"f'{i[0]}:  {'{'}{i[1]}{'}'}'" for i in list(kwargs.items()) if str(i[0]) != 'подробно'])})"""
+        else:
+            text = f"строка({', '.join([str(i) for i in list(kwargs.values())])})"
         return f"""итоговый_текст.append({text})"""
 
     @staticmethod
@@ -401,8 +449,6 @@ COMMANDS = {
     "убрать элемент": ToPythonCommands.list_remove,
     "удалить элемент": ToPythonCommands.list_delete,
     "расширить список": ToPythonCommands.list_extend,
-    "все элементы": ToPythonCommands.list_join,
-    "разделить строку": ToPythonCommands.str_split,
     "удалить ключ": ToPythonCommands.dict_remove,
 
     "наложить текст": ToPythonCommands.paste_text_to_image,
@@ -427,7 +473,7 @@ COMMANDS = {
 }
 
 
-def pre_code() -> list:
+def pre_code():
     gaduka_pre_code_vars = {'левый_верхний_угол': (0.05, 0.05),
                             'правый_верхний_угол': (0.95, 0.05),
                             'левый_нижний_угол': (0.05, 0.95),
@@ -437,13 +483,13 @@ def pre_code() -> list:
                             'Верно': True,
                             'Неверно': False,
 
-                            "чёрный": "'black'",
+                            "чёрный": "'black'", "черный": "'black'",
                             "белый": "'white'",
                             "красный": "'red'",
                             "серый": "'gray'",
                             "оранжевый": "'orange'",
-                            "жёлтый": "'yellow'",
-                            "зелёный": "'green'",
+                            "жёлтый": "'yellow'", "желтый": "'yellow'",
+                            "зелёный": "'green'", "зеленый": "'green'",
                             "синий": "'blue'",
                             "розовый": "'pink'",
                             "фиолетовый": "'violet'"}
@@ -454,7 +500,7 @@ def pre_code() -> list:
     return commands
 
 
-def compile_code(code: list, pre_code_py_commands: list = ()) -> tuple[list, dict]:
+def compile_code(code, pre_code_py_commands=()):
     # Принимает список строк кода на Гадюке.
     # Возвращает код на Питоне (потом выполняется через exec())
     full_line: str = ''
@@ -507,20 +553,34 @@ def compile_code(code: list, pre_code_py_commands: list = ()) -> tuple[list, dic
     return compiled_code, compiled_to_not_compiled_match
 
 
-def compile_line(line: str, line_num=0) -> str:
-    if line == PASS_COMMAND:
+def compile_line(line, line_num=0):
+    if line in PASS_COMMANDS:
         return "pass"
 
     if not line:
         return ""
 
+    if "#" in line:
+        br_count = 0
+        for n, i in enumerate(line):
+            if i == "#" and br_count % 2 == 0:
+                line = line[:n]
+                break
+            elif i in ("'", '"'):
+                br_count += 1
+
     if line.endswith(";"):
         raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{line} \n"
                                  f"В Гадюке, в отличии от многих других языков, не нужно ставить ';' в конце строки.")
 
+
+    for i in WORDS_FOR_REPLACE.items():
+        line = super_replace(line, i[0], i[1])
+
     # Возвращает ту же строчку, но на python
-    sussy_baka = "   ".join(re.findall(r"""f".*\{.*?}.*"|f'.*\{.*?}.*'""", line))
+    sussy_baka = "   ".join(re.findall(r"""f".*\{.*?}.*"|f'.*\{.*?}.*'""", line)) # Проверка с f строками
     structure_finder = re.sub(r"""".*?"|'.*?'""", 'text', line)
+
     # заменяет строки в кавычках на text,
     # что бы игнорировать то что написано в кавычках
 
@@ -532,34 +592,35 @@ def compile_line(line: str, line_num=0) -> str:
             raise ProhibitionWordError(f"Ошибка в строке номер {line_num}: \n{line} \n"
                                        f"Некоторые названия нельзя использовать в своей программе:\n" +
                                        ", ".join(PROHIBITION_WORDS) + "\n"
-                                       f"В вашей программе используется название '{i}'.")
+                                                                      f"В вашей программе используется название '{i}'.")
+
 
     if re.fullmatch("повтор .+ раз:", structure_finder):
         """ 
         цикл for
         """
-        count = line.removeprefix("повтор ").rstrip(" раз:")
+        count = removeprefix(line, "повтор ").rstrip(" раз:")
         return f"for номер_повтора in диапазон({count}):"
 
     elif re.fullmatch("повтор пока .+:", structure_finder):
         """ 
         цикл while
         """
-        condition = line.removeprefix("повтор пока ").rstrip(":")
+        condition = removeprefix(line, "повтор пока ").rstrip(":")
 
         return f"while {condition}:"
     elif re.fullmatch("если .+:", structure_finder):
         """ 
         условие if 
         """
-        condition = line.removeprefix("если ").rstrip(":")
+        condition = removeprefix(line, "если ").rstrip(":")
         return f"if {condition}:"
 
     elif re.fullmatch("иначе если .+:", structure_finder):
         """ 
         условие elif 
         """
-        condition = line.removeprefix("иначе если ").rstrip(":")
+        condition = removeprefix(line, "иначе если ").rstrip(":")
         return f"elif {condition}:"
 
     elif re.fullmatch("иначе:", structure_finder):
@@ -570,6 +631,7 @@ def compile_line(line: str, line_num=0) -> str:
 
     elif re.fullmatch("(?:[\w\[\].]*\.)*\w+\(.*\)", structure_finder):
         """
+        Не реазлизовано
         вызывание функции у переменной
         например
         список.добавить(123)
@@ -577,15 +639,15 @@ def compile_line(line: str, line_num=0) -> str:
         """
         return line
 
-    elif re.fullmatch("(\w ?)+: (?:\w+ *=? *[\S ]+,? *)+", structure_finder):
+    elif re.fullmatch("(\w ?)+: (?:\w+ *=? *[\S ]+,? *)+\s*", structure_finder):
         """
         выполнение команды
         например
-        отправить текст: текст=123
+        добавить текст: текст=123
         """
         return get_command(line, line_num)
 
-    elif re.fullmatch("[\w\[\]]+ *[!+-/*%><]{0,2}= *.+", structure_finder):
+    elif re.fullmatch("[\w\[\], ]+ *[!+-/*%><]{0,2}= *.+", structure_finder):
         """
         задание / изменение переменной
         например
@@ -598,12 +660,12 @@ def compile_line(line: str, line_num=0) -> str:
                                  f"В оформлении строки есть ошибка.")
 
 
-def get_func(gaduka_command: str, line_num) -> str:
+def get_func(gaduka_command, line_num):
     raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
                              f"В гадюке нет функционала вызова функции у объекта")
 
 
-def get_command(gaduka_command: str, line_num) -> str:
+def get_command(gaduka_command, line_num):
     if len(gaduka_command.split(":")) == 1:
         raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{gaduka_command} \n"
                                  f"В оформлении строки есть ошибка.")

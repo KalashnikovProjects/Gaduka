@@ -9,7 +9,7 @@ import time
 import traceback as tr
 from io import BytesIO
 from multiprocessing import Process, Queue
-from config import TIMEOUT_RUN_GADUKA
+TIMEOUT_RUN_GADUKA = 5
 
 from . import compiler
 from PIL import Image
@@ -169,6 +169,7 @@ def run_from_console(code, images=()):
 
 def process_exception(e, compiled_code=None, match_compile=None, code=()):
     #raise e
+    print(tr.format_exc())
     def get_line(lineno=None, text=None):
         try:
             if text:
@@ -225,12 +226,14 @@ def process_exception(e, compiled_code=None, match_compile=None, code=()):
                f'\nНеподходящий тип объекта для этой операции.'
     elif isinstance(e, ValueError):
         l_num, line = get_line()
-
+        if str(e) == "bad transparency mask":
+            return "Произошла ошибка при наложении изображений.\n Возможно, то изображение, которое вы хотите наложить меньше изображения, на которое вы хотите его наложить."
         return f'Ошибка в строке номер {l_num}:\n  {line.lstrip()} ' \
                f'\nАргумент имеет недопустимое значение: {e}'
     elif isinstance(e, IndexError):
         l_num, line = get_line()
-
+        if l_num == "Неизвестно":
+            return f'Ошибка! \nПохоже вы прикрепили недостаточно изображений для запуска этого кода.'
         return f'Ошибка в строке номер {l_num}:\n  {line.lstrip()} ' \
                f'\nВ списке нет элемента с таким индексом.'
     elif isinstance(e, MemoryError):
