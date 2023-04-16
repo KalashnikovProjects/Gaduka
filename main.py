@@ -3,9 +3,20 @@ API
 Flask бекенд сайта
 Телеграмм бот
 """
+from multiprocessing import Process
 
-import os
+from flask_site_host import flask_server
+from tg_bot import tg_main
 
-from api import app
 
-app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+if __name__ == "__main__":
+    p1 = Process(target=tg_main.main)
+    p1.start()
+    p2 = Process(target=flask_server.main)
+    p2.start()
+    p1.join()
+    p2.join()
+
+"""
+
+"""
