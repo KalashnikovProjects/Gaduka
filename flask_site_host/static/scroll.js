@@ -11,14 +11,17 @@ $(window).resize(function(){
 
 document.addEventListener('wheel', function(e){
     e.preventDefault();
+    console.log($.scrollFlag);
     if ($.scrollFlag) {
         return
     }
     $.scrollFlag = true
+    setTimeout(function(){
+        $.scrollFlag = false
+    }, 750);
     if(e.deltaY / 120 > 0) {
-        $.smoothScroll({afterScroll: function() { $.scrollFlag = false }}, `+=${sectionHeight}px`)
+        $("html").animate({ scrollTop: `+=${sectionHeight}px` }, 250);
     }
     else{
-        $.smoothScroll({afterScroll: function() { $.scrollFlag = false }}, `-=${sectionHeight}px`)
-    }
+        $("html").animate({ scrollTop: `-=${sectionHeight}px` }, 250);    }
 }, { passive: false })

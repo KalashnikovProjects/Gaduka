@@ -9,4 +9,4 @@ WTForms~=3.0.1
 flask-login
 flask-wtf
 sqlalchemy-serializer
-Gunicorn
+python-telegram-bot

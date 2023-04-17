@@ -238,6 +238,10 @@ header {
     background-color: #3f4247;
 }
 
+.output {
+    overflow-x: auto!important
+}
+
 .examples-data .output {
     max-height: 35vh;
 }
