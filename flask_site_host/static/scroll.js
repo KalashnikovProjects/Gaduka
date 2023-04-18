@@ -20,8 +20,8 @@ document.addEventListener('wheel', function(e){
         $.scrollFlag = false
     }, 750);
     if(e.deltaY / 120 > 0) {
-        $("html").animate({ scrollTop: `+=${sectionHeight}px` }, 250);
+        $("html").animate({ scrollTop: `+=${sectionHeight}px` }, 500, "easeInOutSine");
     }
     else{
-        $("html").animate({ scrollTop: `-=${sectionHeight}px` }, 250);    }
+        $("html").animate({ scrollTop: `-=${sectionHeight}px` }, 500, "easeInOutSine");}
 }, { passive: false })
