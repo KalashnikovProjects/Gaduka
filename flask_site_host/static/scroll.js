@@ -17,24 +17,24 @@ document.addEventListener('wheel', function(e){
     }
     $.scrollFlag = true
     try {
-        setTimeout(function(){
-        $.scrollFlag = false
-        }, 750);
         if(e.deltaY / 120 > 0) {
             $("html").animate({ scrollTop: `+=${sectionHeight}px` }, 500, "easeInOutSine");
          }
         else{
             $("html").animate({ scrollTop: `-=${sectionHeight}px` }, 500, "easeInOutSine");}
+         setTimeout(function(){
+            $.scrollFlag = false
+            }, 750);
 
     } catch (err) {
         setTimeout(function(){
         $.scrollFlag = false
         }, 1000);
         if(e.deltaY / 120 > 0) {
-            $("html").animate({ scrollTop: `+=${sectionHeight}px` }, 500);
+            $("html").animate({ scrollTop: `+=${sectionHeight}px` });
         }
         else{
-            $("html").animate({ scrollTop: `-=${sectionHeight}px` }, 500);}
+            $("html").animate({ scrollTop: `-=${sectionHeight}px` });}
 
     }
 }, { passive: false })
