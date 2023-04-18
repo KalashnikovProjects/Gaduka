@@ -16,11 +16,10 @@ document.addEventListener('wheel', function(e){
         return
     }
     $.scrollFlag = true
-    setTimeout(function(){
-        $.scrollFlag = false
-    }, 750);
     try {
-
+        setTimeout(function(){
+        $.scrollFlag = false
+        }, 750);
         if(e.deltaY / 120 > 0) {
             $("html").animate({ scrollTop: `+=${sectionHeight}px` }, 500, "easeInOutSine");
          }
@@ -28,7 +27,9 @@ document.addEventListener('wheel', function(e){
             $("html").animate({ scrollTop: `-=${sectionHeight}px` }, 500, "easeInOutSine");}
 
     } catch (err) {
-
+        setTimeout(function(){
+        $.scrollFlag = false
+        }, 1000);
         if(e.deltaY / 120 > 0) {
             $("html").animate({ scrollTop: `+=${sectionHeight}px` }, 500);
         }
