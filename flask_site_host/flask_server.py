@@ -63,7 +63,8 @@ def user_page(username):
     db_sess = db_session.create_session()
 
     user = db_sess.query(User).filter(User.username == username).first()
-    projects = db_sess.query(Projects).filter(User.username == username).all()
+    user_id = user.id
+    projects = db_sess.query(Projects).filter(Projects.user_id == user_id).all()
     if not user:
         return render_template("error_page.html", error='Такого профиля не существует', title='Такого профиля не существует')
 
@@ -199,7 +200,7 @@ def main():
     api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
     api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
     if __name__ == "__main__":
-        app.run(port=config.PORT, host='127.0.0.1')
+        app.run(port=config.PORT, host='0.0.0.0')
     else:
         return app
 
