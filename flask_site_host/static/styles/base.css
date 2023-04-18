@@ -126,7 +126,7 @@ header {
 .inputcode{
     height: 400px;
     resize: none;
-    white-space: nowrap;
+    white-space: pre;
 }
 
 .inputimg:focus,
