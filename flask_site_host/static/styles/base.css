@@ -126,7 +126,7 @@ header {
 .inputcode{
     height: 400px;
     resize: none;
-    white-space: pre;
+    white-space: nowrap;
 }
 
 .inputimg:focus,
@@ -236,6 +236,10 @@ header {
 
 .examples-data div::-webkit-scrollbar-thumb {
     background-color: #3f4247;
+}
+
+.output {
+    overflow-x: auto!important
 }
 
 .examples-data .output {
