@@ -19,9 +19,21 @@ document.addEventListener('wheel', function(e){
     setTimeout(function(){
         $.scrollFlag = false
     }, 750);
-    if(e.deltaY / 120 > 0) {
-        $("html").animate({ scrollTop: `+=${sectionHeight}px` }, 500, "easeInOutSine");
+    try {
+
+        if(e.deltaY / 120 > 0) {
+            $("html").animate({ scrollTop: `+=${sectionHeight}px` }, 500, "easeInOutSine");
+         }
+        else{
+            $("html").animate({ scrollTop: `-=${sectionHeight}px` }, 500, "easeInOutSine");}
+
+    } catch (err) {
+
+        if(e.deltaY / 120 > 0) {
+            $("html").animate({ scrollTop: `+=${sectionHeight}px` }, 500);
+        }
+        else{
+            $("html").animate({ scrollTop: `-=${sectionHeight}px` }, 500);}
+
     }
-    else{
-        $("html").animate({ scrollTop: `-=${sectionHeight}px` }, 500, "easeInOutSine");}
 }, { passive: false })
