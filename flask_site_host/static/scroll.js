@@ -11,30 +11,19 @@ $(window).resize(function(){
 
 document.addEventListener('wheel', function(e){
     e.preventDefault();
-    console.log($.scrollFlag);
     if ($.scrollFlag) {
         return
     }
     $.scrollFlag = true
-    try {
         if(e.deltaY / 120 > 0) {
-            $("html").animate({ scrollTop: `+=${sectionHeight}px` }, 500, "easeInOutSine");
+            $("html,body").animate({ scrollTop: `+=${sectionHeight}px` }, 500, "easeInOutSine",
+                function() {
+                    $.scrollFlag = false
+                });
          }
         else{
-            $("html").animate({ scrollTop: `-=${sectionHeight}px` }, 500, "easeInOutSine");}
-         setTimeout(function(){
-            $.scrollFlag = false
-            }, 750);
-
-    } catch (err) {
-        setTimeout(function(){
-        $.scrollFlag = false
-        }, 1000);
-        if(e.deltaY / 120 > 0) {
-            $("html").animate({ scrollTop: `+=${sectionHeight}px` });
-        }
-        else{
-            $("html").animate({ scrollTop: `-=${sectionHeight}px` });}
-
-    }
+            $("html,body").animate({ scrollTop: `-=${sectionHeight}px` }, 500, "easeInOutSine",
+                function() {
+                    $.scrollFlag = false
+                });}
 }, { passive: false })
