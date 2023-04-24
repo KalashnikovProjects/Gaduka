@@ -16,7 +16,7 @@ document.addEventListener('wheel', function(e){
     }
     setTimeout(function(){
         $.scrollFlag = false
-    }, 750);
+    }, 1250);
     
     $.scrollFlag = true
         if(e.deltaY / 120 > 0) {
