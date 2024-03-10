@@ -195,6 +195,7 @@ def check_image(img_url):
 
 def main(*args, **kwargs):
     db_session.global_init()
+    print(args, kwargs)
 
     app.run(*args, **kwargs)
 
