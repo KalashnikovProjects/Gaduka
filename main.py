@@ -11,12 +11,13 @@ import requests
 
 
 def run():
-  while True:
-    requests.get("https://truth-chalk-servant.glitch.me")
-    requests.get("https://gaduka.glitch.me")
-    time.sleep(60)
-    
+    while True:
+        requests.get("https://truth-chalk-servant.glitch.me")
+        requests.get("https://gaduka.glitch.me")
+        time.sleep(60)
 
-t = Thread(target=run)
-t.start()
-app = main
+
+if __name__ == '__main__':
+    t = Thread(target=run)
+    t.start()
+    main()
