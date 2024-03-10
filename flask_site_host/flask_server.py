@@ -196,10 +196,10 @@ def check_image(img_url):
 
 
 def main(*args, **kwargs):
-    db_session.global_init()
     print("Подключение к базе данных...")
     while True:
         try:
+            db_session.global_init()
             sess = db_session.create_session()
         except Exception:
             print("Неудачно, ждём переподключение")
