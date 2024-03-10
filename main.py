@@ -9,6 +9,7 @@ from flask_site_host.flask_server import main
 import time
 import requests
 
+
 def run():
   while True:
     requests.get("https://truth-chalk-servant.glitch.me")
@@ -18,4 +19,4 @@ def run():
 
 t = Thread(target=run)
 t.start()
-app = main()
+app = main
