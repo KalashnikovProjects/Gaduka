@@ -197,7 +197,7 @@ def main(*args, **kwargs):
     db_session.global_init()
     print(args, kwargs)
 
-    app.run(*args, **kwargs)
+    return app.run(*args, **kwargs)
 
 
 if __name__ == '__main__':
