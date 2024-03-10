@@ -26,6 +26,10 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
 )
 login_manager = LoginManager()
 login_manager.init_app(app)
+api.add_resource(database_api.UsersListResource, "/api/v1/users")
+api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
+api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
+api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
 
 
 @app.errorhandler(404)
@@ -189,21 +193,11 @@ def check_image(img_url):
     return not res['prediction'][0]["probability"] > 0.3
 
 
-def main():
+def main(*args, **kwargs):
+    db_session.global_init()
 
-    if __name__ == "__main__":
-        db_session.global_init()
-    else:
-        db_session.global_init()
-    api.add_resource(database_api.UsersListResource, "/api/v1/users")
-    api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
-    api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
-    api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
-    if __name__ == "__main__":
-        app.run(port=config.PORT, host='0.0.0.0')
-    else:
-        return app
+    app.run(*args, **kwargs)
 
 
 if __name__ == '__main__':
-    main()
+    main(port=config.PORT, host='0.0.0.0')
