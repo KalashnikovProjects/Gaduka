@@ -44,7 +44,7 @@ def bad_request(_):
 
 @login_manager.user_loader
 def load_user(user_id):
-    db_sess = db_session.create_session()
+    db_sess = app.db_session
     a = db_sess.get(User, user_id)
     db_sess.close()
     return a
@@ -64,7 +64,7 @@ def index():
 
 @app.route('/users/<username>')
 def user_page(username):
-    db_sess = db_session.create_session()
+    db_sess = app.db_session
 
     user = db_sess.query(User).filter(User.username == username).first()
     user_id = user.id
@@ -96,7 +96,7 @@ def login():
     if not check_user(user_data):
         return bad_request()
 
-    db_sess = db_session.create_session()
+    db_sess = app.db_session
     user = db_sess.query(User).filter(User.id == user_data['id']).first()
     if not user:
         user = User(
@@ -127,7 +127,7 @@ def run_code():
 @app.route('/create_project', methods=['GET'])
 @login_required
 def create_project():
-    db_sess = db_session.create_session()
+    db_sess = app.db_session
     project = Projects(
         name="Новый проект",
         code='',
@@ -136,11 +136,12 @@ def create_project():
     db_sess.commit()
     return redirect(f"/projects/{project.id}")
 
+
 @app.route('/projects/<int:project_id>', methods=['GET', "POST"])
 def projects_page(project_id):
     form = SaveProjectForm()
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
+        db_sess = app.db_session
         project = db_sess.get(Projects, project_id)
         if form.submit.data:
             project.name = form.name.data
@@ -159,7 +160,7 @@ def projects_page(project_id):
             db_sess.commit()
             return redirect(f"/users/{current_user.username}")
 
-    db_sess = db_session.create_session()
+    db_sess = app.db_session
 
     project = db_sess.get(Projects, project_id)
     if not project:
@@ -195,7 +196,10 @@ def check_image(img_url):
 
 def main(*args, **kwargs):
     db_session.global_init()
-    return app.run(*args, **kwargs)
+    sess = db_session.create_session()
+    app.db_session = sess
+    app.run(*args, **kwargs)
+    sess.close()
 
 
 if __name__ == '__main__':
