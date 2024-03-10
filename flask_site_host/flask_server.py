@@ -1,5 +1,6 @@
 import base64
 import json
+import time
 from datetime import timedelta
 
 import requests
@@ -196,8 +197,17 @@ def check_image(img_url):
 
 def main(*args, **kwargs):
     db_session.global_init()
-    sess = db_session.create_session()
-    app.db_session = sess
+    print("Подключение к базе данных...")
+    while True:
+        try:
+            sess = db_session.create_session()
+        except Exception:
+            print("Неудачно, ждём переподключение")
+            time.sleep(30)
+        else:
+            app.db_session = sess
+            break
+    print("База данных подключена")
     app.run(*args, **kwargs)
     sess.close()
 
