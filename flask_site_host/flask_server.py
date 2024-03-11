@@ -47,7 +47,7 @@ def bad_request(_):
 def load_user(user_id):
     db_sess = app.db_session
     a = db_sess.get(User, user_id)
-    db_sess.close()
+    # db_sess.close()
     return a
 
 
@@ -109,7 +109,7 @@ def login():
         db_sess.add(user)
         db_sess.commit()
     login_user(user, remember=True)
-    db_sess.close()
+    # db_sess.close()
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
@@ -171,7 +171,7 @@ def projects_page(project_id):
     form.name.data = project.name
     form.code.data = project.code
     author = project.user.username
-    db_sess.close()
+    # db_sess.close()
     if current_user.is_authenticated and author == current_user.username:
         template = 'my_project_page.html'
     else:
