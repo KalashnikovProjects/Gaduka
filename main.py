@@ -5,6 +5,8 @@ Flask бекенд сайта
 """
 
 from threading import Thread
+
+import config
 from flask_site_host.flask_server import main
 import time
 import requests
@@ -20,4 +22,4 @@ def run():
 if __name__ == '__main__':
     t = Thread(target=run)
     t.start()
-    main()
+    main(port=config.PORT, host='0.0.0.0')
