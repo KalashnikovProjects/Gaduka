@@ -2,7 +2,7 @@ import os
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, close_all_sessions
 import sqlalchemy.ext.declarative as dec
 
 SqlAlchemyBase = dec.declarative_base()
@@ -21,6 +21,7 @@ def global_init():
 
     engine = sa.create_engine(conn_str, echo=False, connect_args={'charset': 'utf8mb4'}, pool_recycle=3600, pool_size=3, max_overflow=0)
     __factory = orm.sessionmaker(bind=engine)
+    close_all_sessions()
 
     from . import __all_models
 
