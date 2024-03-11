@@ -1,5 +1,6 @@
 import base64
 import json
+import time
 from datetime import timedelta
 
 import requests
@@ -200,7 +201,13 @@ def check_image(img_url):
 
 
 def main(*args, **kwargs):
-    db_session.global_init()
+    while True:
+        try:
+            db_session.global_init()
+        except Exception:
+            time.sleep(20)
+        else:
+            break
     return app.run(*args, **kwargs)
 
 
