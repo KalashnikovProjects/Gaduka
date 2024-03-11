@@ -1,6 +1,5 @@
 import base64
 import json
-import time
 from datetime import timedelta
 
 import requests
@@ -45,9 +44,9 @@ def bad_request(_):
 
 @login_manager.user_loader
 def load_user(user_id):
-    db_sess = app.db_session
+    db_sess = db_session.create_session()
     a = db_sess.get(User, user_id)
-    # db_sess.close()
+    db_sess.close()
     return a
 
 
@@ -65,7 +64,7 @@ def index():
 
 @app.route('/users/<username>')
 def user_page(username):
-    db_sess = app.db_session
+    db_sess = db_session.create_session()
 
     user = db_sess.query(User).filter(User.username == username).first()
     user_id = user.id
@@ -97,7 +96,7 @@ def login():
     if not check_user(user_data):
         return bad_request()
 
-    db_sess = app.db_session
+    db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == user_data['id']).first()
     if not user:
         user = User(
@@ -109,7 +108,7 @@ def login():
         db_sess.add(user)
         db_sess.commit()
     login_user(user, remember=True)
-    # db_sess.close()
+    db_sess.close()
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
@@ -128,7 +127,7 @@ def run_code():
 @app.route('/create_project', methods=['GET'])
 @login_required
 def create_project():
-    db_sess = app.db_session
+    db_sess = db_session.create_session()
     project = Projects(
         name="Новый проект",
         code='',
@@ -142,7 +141,7 @@ def create_project():
 def projects_page(project_id):
     form = SaveProjectForm()
     if form.validate_on_submit():
-        db_sess = app.db_session
+        db_sess = db_session.create_session()
         project = db_sess.get(Projects, project_id)
         if form.submit.data:
             project.name = form.name.data
@@ -161,7 +160,7 @@ def projects_page(project_id):
             db_sess.commit()
             return redirect(f"/users/{current_user.username}")
 
-    db_sess = app.db_session
+    db_sess = db_session.create_session()
 
     project = db_sess.get(Projects, project_id)
     if not project:
@@ -171,7 +170,7 @@ def projects_page(project_id):
     form.name.data = project.name
     form.code.data = project.code
     author = project.user.username
-    # db_sess.close()
+    db_sess.close()
     if current_user.is_authenticated and author == current_user.username:
         template = 'my_project_page.html'
     else:
@@ -196,20 +195,8 @@ def check_image(img_url):
 
 
 def main(*args, **kwargs):
-    print("Подключение к базе данных...")
-    while True:
-        try:
-            db_session.global_init()
-            sess = db_session.create_session()
-        except Exception:
-            print("Неудачно, ждём переподключение")
-            time.sleep(30)
-        else:
-            app.db_session = sess
-            break
-    print("База данных подключена")
-    app.run(*args, **kwargs)
-    sess.close()
+    db_session.global_init()
+    return app.run(*args, **kwargs)
 
 
 if __name__ == '__main__':
