@@ -69,6 +69,7 @@ def user_page(username):
     user = db_sess.query(User).filter(User.username == username).first()
     user_id = user.id
     projects = db_sess.query(Projects).filter(Projects.user_id == user_id).all()
+    db_sess.close()
     if not user:
         return render_template("error_page.html", error='Такого профиля не существует', title='Такого профиля не существует')
 
@@ -134,6 +135,7 @@ def create_project():
         user_id=current_user.id)
     db_sess.add(project)
     db_sess.commit()
+    db_sess.close()
     return redirect(f"/projects/{project.id}")
 
 
@@ -153,16 +155,19 @@ def projects_page(project_id):
                 # if check_image(a):
                 project.img = img
             db_sess.commit()
+            db_sess.close()
             return '', 204
 
         else:
             db_sess.delete(project)
             db_sess.commit()
+            db_sess.close()
             return redirect(f"/users/{current_user.username}")
 
     db_sess = db_session.create_session()
 
     project = db_sess.get(Projects, project_id)
+    db_sess.close()
     if not project:
         return render_template("error_page.html", error="Такого проекта не существует")
 
