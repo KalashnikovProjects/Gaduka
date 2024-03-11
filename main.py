@@ -8,7 +8,6 @@ from threading import Thread
 from flask_site_host.flask_server import main
 import time
 import requests
-import config
 
 
 def run():
@@ -21,4 +20,4 @@ def run():
 if __name__ == '__main__':
     t = Thread(target=run)
     t.start()
-    main(port=config.PORT, host='0.0.0.0')
+    main()
