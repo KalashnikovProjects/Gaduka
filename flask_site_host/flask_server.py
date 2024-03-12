@@ -136,8 +136,9 @@ def create_project():
         user_id=current_user.id)
     db_sess.add(project)
     db_sess.commit()
+    project_id = project.id
     db_sess.close()
-    return redirect(f"/projects/{project.id}")
+    return redirect(f"/projects/{project_id}")
 
 
 @app.route('/projects/<int:project_id>', methods=['GET', "POST"])
@@ -168,21 +169,20 @@ def projects_page(project_id):
     db_sess = db_session.create_session()
 
     project = db_sess.get(Projects, project_id)
-    db_sess.close()
     if not project:
         return render_template("error_page.html", error="Такого проекта не существует")
 
-    db_sess.commit()
     form.name.data = project.name
     form.code.data = project.code
     author = project.user.username
+    project_name = project.name
     db_sess.close()
     if current_user.is_authenticated and author == current_user.username:
         template = 'my_project_page.html'
     else:
         template = 'project_page.html'
 
-    return render_template(template, title=f'Гадюка проект {project.name}', form=form, author=author)
+    return render_template(template, title=f'Гадюка проект {project_name}', form=form, author=author)
 
 
 def check_image(img_url):
