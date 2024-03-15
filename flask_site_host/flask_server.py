@@ -173,22 +173,6 @@ def projects_page(project_id):
 
     return render_template(template, title=f'Гадюка проект {project.name}', form=form, author=author)
 
-
-def check_image(img_url):
-    # Автомодерация изображений, перед тем, как поставить их на обложку проекта
-    url = 'https://app.nanonets.com/api/v2/OCR/Model/353cea12-4dcc-47ee-b139-dd345157b17d/LabelFile/'
-
-    headers = {'accept': 'application/x-www-form-urlencoded'}
-
-    data = {'file': img_url}
-
-    response = requests.request('POST', url, headers=headers,
-                                auth=requests.auth.HTTPBasicAuth(config.NANONETS_API_TOKEN, ''),
-                                files=data).json()
-    res = response['result']
-    return not res['prediction'][0]["probability"] > 0.3
-
-
 def main():
     if __name__ == "__main__":
         db_session.global_init("db/main_gaduka.db")
