@@ -98,7 +98,7 @@ def login():
         user = User(
             id=user_data['id'],
             username=user_data['username'],
-            photo_url=user_data['photo_url'],
+            photo_url=user_data.get('photo_url', "https://communitylivinghamilton.com/wp-content/uploads/headshot-silhouette.jpg"),
             auth_date=user_data['auth_date'],
         )
         db_sess.add(user)
