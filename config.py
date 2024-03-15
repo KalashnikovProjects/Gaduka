@@ -1,11 +1,11 @@
-BOT_TOKEN = '6058716388:AAGvTw8zqF3BXsFq6v4MywTtwhM9Fcnw2Rk'
-DEFAULT_IMG = 'flask-site-host/static/img/gaduka-icon.png'
-REST_API_TOKENS = ('61jf61LheMHsxVh8v4YhvvXiNSSdVamXBket6sBU',  # Токен для Телеграмм бота
-                   '1XYnMkfokzNQnY1iUfuDZ7w2FXGiyqsV2miTDbt2'  # Запасной токен
-                   )
-CODE_RUN_API = 'https://gaduka.glitch.me/'
+import os
 
-NANONETS_API_TOKEN = 'bd609d8a-c631-11ed-9b9b-169ce9ee681d'
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+REST_API_TOKENS = (os.environ.get('REST_API_TOKENS1'), os.environ.get('REST_API_TOKENS2'))
+
+
+DEFAULT_IMG = 'flask-site-host/static/img/gaduka-icon.png'
 PORT = 80
-API_SERVER = 'https://gaduka.sytes.net/'
+
+CODE_RUN_API = 'https://gaduka.glitch.me/'
 DIAMOND_GOOSE = 'https://gaduka.sytes.net/'
