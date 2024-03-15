@@ -5,6 +5,8 @@ import sqlalchemy.orm as orm
 from sqlalchemy.orm import Session, close_all_sessions
 import sqlalchemy.ext.declarative as dec
 
+import config
+
 SqlAlchemyBase = dec.declarative_base()
 
 __factory = None
@@ -15,11 +17,9 @@ def global_init():
 
     if __factory:
         return
-    conn_str = os.getenv("MYSQL")
-    # 'mysql://b38x72no83ne2fwf36qa:pscale_pw_nLy88xduCtUXA1mSjyeUdpHIVSv3pWKr2di52mkhtJA@aws.connect.psdb.cloud/gadukadatabase?ssl={"rejectUnauthorized":true}'
-    print(f"Подключение к базе данных по адресу {conn_str}")
+    print(f"Подключение к базе данных по адресу {config.MYSQL_CONNECT_STRING}")
 
-    engine = sa.create_engine(conn_str, echo=False, connect_args={'charset': 'utf8mb4'}, pool_recycle=3600)
+    engine = sa.create_engine(config.MYSQL_CONNECT_STRING, echo=False, connect_args={'charset': 'utf8mb4'}, pool_recycle=3600)
     __factory = orm.sessionmaker(bind=engine)
     close_all_sessions()
 
