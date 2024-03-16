@@ -2,7 +2,7 @@ import os
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from sqlalchemy.orm import Session, close_all_sessions
+from sqlalchemy.orm import Session
 import sqlalchemy.ext.declarative as dec
 
 import config
@@ -21,7 +21,6 @@ def global_init():
 
     engine = sa.create_engine(config.MYSQL_CONNECT_STRING, echo=False, connect_args={'charset': 'utf8mb4'}, pool_recycle=3600)
     __factory = orm.sessionmaker(bind=engine)
-    close_all_sessions()
 
     from . import __all_models
 
