@@ -1,11 +1,12 @@
 import base64
 import json
+import logging
+import time
 from datetime import timedelta
 
-import requests
 from flask_restful import Api
-from flask import Flask, render_template, request, session, make_response, redirect, jsonify, abort, url_for
-from flask_login import LoginManager, login_user, current_user, logout_user, login_required, login_manager
+from flask import Flask, render_template, request, redirect
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 from flask_site_host.forms.code_page import SaveProjectForm
 from flask_site_host.api_server import gaduka_api, database_api
 from flask_site_host.data import db_session
@@ -26,6 +27,16 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
 )
 login_manager = LoginManager()
 login_manager.init_app(app)
+api.add_resource(database_api.UsersListResource, "/api/v1/users")
+api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
+api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
+api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
+
+
+@app.errorhandler(500)
+def server_error(error):
+    logging.error(error)
+    return render_template("error_page.html", error="Произошла непредвиденная ошибка на стороне сервера.")
 
 
 @app.errorhandler(404)
@@ -40,10 +51,9 @@ def bad_request(_):
 
 @login_manager.user_loader
 def load_user(user_id):
-    db_sess = db_session.create_session()
-    a = db_sess.get(User, user_id)
-    db_sess.close()
-    return a
+    with db_session.create_session() as db_sess:
+        a = db_sess.get(User, user_id)
+        return a
 
 
 @app.route('/logout')
@@ -58,19 +68,20 @@ def logout():
 def index():
     return render_template('index.html', title="Язык программирования Гадюка", examples=EXAMPLES)
 
+
 @app.route('/users/<username>')
 def user_page(username):
-    db_sess = db_session.create_session()
+    with db_session.create_session() as db_sess:
+        user = db_sess.query(User).filter(User.username == username).first()
+        user_id = user.id
+        projects = db_sess.query(Projects).filter(Projects.user_id == user_id).all()
+        if not user:
+            return render_template("error_page.html", error='Такого профиля не существует', title='Такого профиля не существует')
 
-    user = db_sess.query(User).filter(User.username == username).first()
-    user_id = user.id
-    projects = db_sess.query(Projects).filter(Projects.user_id == user_id).all()
-    if not user:
-        return render_template("error_page.html", error='Такого профиля не существует', title='Такого профиля не существует')
-
-    return render_template('user_page.html', user_page_name=username, title=f"Профиль {username}", projects=projects)
+        return render_template('user_page.html', user_page_name=username, title=f"Профиль {username}", projects=projects)
 
 
+# Проверяет валидность логина через телеграм
 def check_user(user):
     d = user.copy()
     del d['hash']
@@ -92,20 +103,19 @@ def login():
     if not check_user(user_data):
         return bad_request()
 
-    db_sess = db_session.create_session()
-    user = db_sess.query(User).filter(User.id == user_data['id']).first()
-    if not user:
-        user = User(
-            id=user_data['id'],
-            username=user_data['username'],
-            photo_url=user_data.get('photo_url', "https://communitylivinghamilton.com/wp-content/uploads/headshot-silhouette.jpg"),
-            auth_date=user_data['auth_date'],
-        )
-        db_sess.add(user)
-        db_sess.commit()
-    login_user(user, remember=True)
-    db_sess.close()
-    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+    with db_session.create_session() as db_sess:
+        user = db_sess.query(User).filter(User.id == user_data['id']).first()
+        if not user:
+            user = User(
+                id=user_data['id'],
+                username=user_data['username'],
+                photo_url=user_data.get('photo_url', "https://communitylivinghamilton.com/wp-content/uploads/headshot-silhouette.jpg"),
+                auth_date=user_data['auth_date'],
+            )
+            db_sess.add(user)
+            db_sess.commit()
+        login_user(user, remember=True)
+        return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
 @app.route('/login_error')
@@ -123,67 +133,62 @@ def run_code():
 @app.route('/create_project', methods=['GET'])
 @login_required
 def create_project():
-    db_sess = db_session.create_session()
-    project = Projects(
-        name="Новый проект",
-        code='',
-        user_id=current_user.id)
-    db_sess.add(project)
-    db_sess.commit()
-    return redirect(f"/projects/{project.id}")
+    with db_session.create_session() as db_sess:
+        project = Projects(
+            name="Новый проект",
+            code='',
+            user_id=current_user.id)
+        db_sess.add(project)
+        db_sess.commit()
+        project_id = project.id
+        return redirect(f"/projects/{project_id}")
+
 
 @app.route('/projects/<int:project_id>', methods=['GET', "POST"])
 def projects_page(project_id):
     form = SaveProjectForm()
-    if form.validate_on_submit():
-        db_sess = db_session.create_session()
+    with db_session.create_session() as db_sess:
+        if form.validate_on_submit():
+            project = db_sess.get(Projects, project_id)
+            if form.submit.data:
+                project.name = form.name.data
+                project.code = form.code.data
+                if form.images.data:
+                    form.images.data.stream.seek(0)
+                    a = form.images.data.read()
+                    img = str(base64.b64encode(a)).strip("b'")
+                    # if check_image(a):
+                    project.img = img
+                db_sess.commit()
+                return '', 204
+
+            else:
+                db_sess.delete(project)
+                db_sess.commit()
+                return redirect(f"/users/{current_user.username}")
+
         project = db_sess.get(Projects, project_id)
-        if form.submit.data:
-            project.name = form.name.data
-            project.code = form.code.data
-            if form.images.data:
-                form.images.data.stream.seek(0)
-                a = form.images.data.read()
-                img = str(base64.b64encode(a)).strip("b'")
-                # if check_image(a):
-                project.img = img
-            db_sess.commit()
-            return '', 204
+        if not project:
+            return render_template("error_page.html", error="Такого проекта не существует")
 
+        form.name.data = project.name
+        form.code.data = project.code
+        author = project.user.username
+        if current_user.is_authenticated and author == current_user.username:
+            template = 'my_project_page.html'
         else:
-            db_sess.delete(project)
-            db_sess.commit()
-            return redirect(f"/users/{current_user.username}")
+            template = 'project_page.html'
 
-    db_sess = db_session.create_session()
+        return render_template(template, title=f'Гадюка проект {project.name}', form=form, author=author)
 
-    project = db_sess.get(Projects, project_id)
-    if not project:
-        return render_template("error_page.html", error="Такого проекта не существует")
-
-    db_sess.commit()
-    form.name.data = project.name
-    form.code.data = project.code
-    author = project.user.username
-    db_sess.close()
-    if current_user.is_authenticated and author == current_user.username:
-        template = 'my_project_page.html'
-    else:
-        template = 'project_page.html'
-
-    return render_template(template, title=f'Гадюка проект {project.name}', form=form, author=author)
 
 def main():
     if __name__ == "__main__":
         db_session.global_init("db/main_gaduka.db")
     else:
         db_session.global_init("flask_site_host/db/main_gaduka.db")
-    api.add_resource(database_api.UsersListResource, "/api/v1/users")
-    api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
-    api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
-    api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
-    api.add_resource(gaduka_api.GadukaRunCodeApi, "/api/v1/engine")
-    app.run(port=config.PORT, host='127.0.0.1')
+    logging.info("База данных подключена")
+    app.run(port=config.PORT, host='0.0.0.0')
 
 
 if __name__ == '__main__':
