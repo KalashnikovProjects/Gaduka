@@ -1,6 +1,7 @@
 import base64
 import json
 import logging
+import secrets
 import time
 from datetime import timedelta
 
@@ -18,13 +19,12 @@ import hmac
 import config
 from flask_site_host.code_examples import EXAMPLES
 
+from sqlalchemy import select, update, delete
 
 app = Flask(__name__)
 api = Api(app)
-app.config['SECRET_KEY'] = '/mops/delete/up/pack/super214jmi3rg4nsnfaqta/'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
-    days=3650
-)
+app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=3650)
 login_manager = LoginManager()
 login_manager.init_app(app)
 api.add_resource(database_api.UsersListResource, "/api/v1/users")
@@ -51,9 +51,17 @@ def bad_request(_):
 
 @login_manager.user_loader
 def load_user(user_id):
-    with db_session.create_session() as db_sess:
-        a = db_sess.get(User, user_id)
-        return a
+    for i in range(3):
+        try:
+            with db_session.create_session() as db_sess:
+                stmt = select(User).where(User.id == user_id)
+                user = db_sess.scalar(stmt)
+                return user
+        except Exception as e:
+            logging.warning(f"Ошибка при запросе в бд {e}, попытка {i + 1}/3")
+            time.sleep(3)
+    logging.error(f"База данных не отвечает")
+    raise
 
 
 @app.route('/logout')
@@ -72,11 +80,13 @@ def index():
 @app.route('/users/<username>')
 def user_page(username):
     with db_session.create_session() as db_sess:
-        user = db_sess.query(User).filter(User.username == username).first()
-        user_id = user.id
-        projects = db_sess.query(Projects).filter(Projects.user_id == user_id).all()
+        stmt = select(User).where(User.username == username)
+        user = db_sess.scalar(stmt)
         if not user:
             return render_template("error_page.html", error='Такого профиля не существует', title='Такого профиля не существует')
+
+        stmt = select(Projects).where(Projects.user_id == user.id)
+        projects = db_sess.scalars(stmt).all()
 
         return render_template('user_page.html', user_page_name=username, title=f"Профиль {username}", projects=projects)
 
@@ -104,7 +114,8 @@ def login():
         return bad_request()
 
     with db_session.create_session() as db_sess:
-        user = db_sess.query(User).filter(User.id == user_data['id']).first()
+        stmt = select(User).where(User.id == user_data['id'])
+        user = db_sess.scalar(stmt)
         if not user:
             user = User(
                 id=user_data['id'],
@@ -149,25 +160,28 @@ def projects_page(project_id):
     form = SaveProjectForm()
     with db_session.create_session() as db_sess:
         if form.validate_on_submit():
-            project = db_sess.get(Projects, project_id)
+            stmt = select(Projects).where(Projects.id == project_id)
+            project = db_sess.scalar(stmt)
             if form.submit.data:
-                project.name = form.name.data
-                project.code = form.code.data
+                stmt = update(Projects).where(Projects.id == project.id).values(name=form.name.data, code=form.code.data)
                 if form.images.data:
                     form.images.data.stream.seek(0)
                     a = form.images.data.read()
                     img = str(base64.b64encode(a)).strip("b'")
                     # if check_image(a):
-                    project.img = img
+                    stmt = stmt.values(img=img)
+                db_sess.execute(stmt)
                 db_sess.commit()
                 return '', 204
 
             else:
-                db_sess.delete(project)
+                stmt = delete(Projects).where(Projects.id == project.id)
+                db_sess.execute(stmt)
                 db_sess.commit()
                 return redirect(f"/users/{current_user.username}")
 
-        project = db_sess.get(Projects, project_id)
+        stmt = select(Projects).where(Projects.id == project_id)
+        project = db_sess.scalar(stmt)
         if not project:
             return render_template("error_page.html", error="Такого проекта не существует")
 
@@ -183,12 +197,14 @@ def projects_page(project_id):
 
 
 def main():
+    attempt = 1
     while True:
         try:
             db_session.global_init()
         except Exception as e:
-            logging.warning(e)
+            logging.warning(f"Ошибка при инициализации подключения к базе данных {e}, попытка {attempt}")
             time.sleep(20)
+            attempt += 1
         else:
             logging.info("База данных подключена")
             break
