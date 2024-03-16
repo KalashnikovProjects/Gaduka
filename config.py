@@ -6,4 +6,3 @@ MYSQL_CONNECT_STRING = os.getenv("MYSQL")
 
 DEFAULT_IMG = 'img/gaduka-icon.png'  # Изображение проекта по умолчанию
 PORT = 10000
-TIMEOUT_RUN_GADUKA = 10

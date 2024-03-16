@@ -3,16 +3,16 @@ API
 Flask бекенд сайта
 Телеграмм бот
 """
-
+import logging
 from threading import Thread
 
-import config
 from flask_site_host.flask_server import main
 import time
 import requests
 
 
 def run():
+    logging.info("Запущен пинг glitch хостингов")
     while True:
         requests.get("https://truth-chalk-servant.glitch.me")
         requests.get("https://gaduka.glitch.me")
@@ -22,4 +22,4 @@ def run():
 if __name__ == '__main__':
     t = Thread(target=run)
     t.start()
-    main(port=config.PORT, host='0.0.0.0')
+    main()

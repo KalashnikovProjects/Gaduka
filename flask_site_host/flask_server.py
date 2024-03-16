@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 import time
 from datetime import timedelta
 
@@ -34,6 +35,7 @@ api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_i
 
 @app.errorhandler(500)
 def server_error(error):
+    logging.error(error)
     return render_template("error_page.html", error="Произошла непредвиденная ошибка на стороне сервера.")
 
 
@@ -180,16 +182,18 @@ def projects_page(project_id):
         return render_template(template, title=f'Гадюка проект {project.name}', form=form, author=author)
 
 
-def main(*args, **kwargs):
+def main():
     while True:
         try:
             db_session.global_init()
-        except Exception:
+        except Exception as e:
+            logging.warning(e)
             time.sleep(20)
         else:
+            logging.info("База данных подключена")
             break
-    return app.run(*args, **kwargs)
+    return app.run(port=config.PORT, host='0.0.0.0')
 
 
 if __name__ == '__main__':
-    main(port=config.PORT, host='0.0.0.0')
+    main()

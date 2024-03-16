@@ -7,6 +7,7 @@ from flask_login import UserMixin
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.dialects.mysql import BIGINT, MEDIUMTEXT, TINYTEXT
 
+
 @dataclass
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
@@ -21,4 +22,3 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     def __repr__(self):
         return f"{self.username}"
-
