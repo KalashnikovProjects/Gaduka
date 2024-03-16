@@ -1,7 +1,6 @@
 import base64
 import json
 import logging
-import time
 from datetime import timedelta
 
 from flask_restful import Api
@@ -31,6 +30,7 @@ api.add_resource(database_api.UsersListResource, "/api/v1/users")
 api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
 api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
 api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
+api.add_resource(gaduka_api.GadukaRunCodeApi, "/api/v1/engine")
 
 
 @app.errorhandler(500)

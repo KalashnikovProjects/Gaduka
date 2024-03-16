@@ -9,10 +9,10 @@ import time
 import traceback as tr
 from io import BytesIO
 from multiprocessing import Process, Queue
-TIMEOUT_RUN_GADUKA = 10
-
 from . import compiler
 from PIL import Image
+
+TIMEOUT_RUN_GADUKA = 10
 
 
 def run_from_api(code, images_json):
@@ -32,7 +32,7 @@ def run_from_api(code, images_json):
             ms = return_queue.get(timeout=0.1)
             if ms:
                 break
-        except queue.Empty as e:
+        except queue.Empty:
             pass
 
         time.sleep(.1)
@@ -61,6 +61,7 @@ def run_from_api(code, images_json):
 
 def mem_limit_only_for_linux(coef):
     import resource
+
     def memory_limit():
         soft, hard = resource.getrlimit(resource.RLIMIT_AS)
         resource.setrlimit(resource.RLIMIT_AS, (get_memory() * 1024 * coef, hard))
@@ -130,7 +131,7 @@ def run_from_console(code, images=()):
             ms = return_queue.get(timeout=0.1)
             if ms:
                 break
-        except queue.Empty as e:
+        except queue.Empty:
             pass
 
         time.sleep(.1)
@@ -139,7 +140,8 @@ def run_from_console(code, images=()):
         procc.join()
         return_queue.close()
 
-        print("\nОшибка! Похоже ваш код выполняется очень долго.\nВозможно проблема в цикле 'повтор пока'. \n Также такое может произойти при большом количестве изображений.")
+        print(
+            "\nОшибка! Похоже ваш код выполняется очень долго.\nВозможно проблема в цикле 'повтор пока'. \n Также такое может произойти при большом количестве изображений.")
         return
     result_imgs, result_text, compiled_code = ms
     for i in result_imgs:
@@ -169,31 +171,33 @@ def run_from_console(code, images=()):
 
 
 def process_exception(e, compiled_code=None, match_compile=None, code=()):
-    #raise e
-    print(tr.format_exc())
+    # raise e
+    # print(tr.format_exc())
+
     def get_line(lineno=None, text=None):
+        line_num = 0
         try:
             if text:
                 try:
-                    l_num = match_compile[text.lstrip()]
+                    line_num = match_compile[text.lstrip()]
                 except KeyError:
                     if not lineno:
-                        l_num = match_compile[text]
+                        line_num = match_compile[text]
             else:
                 try:
                     if not lineno:
-                        l_num = match_compile[compiled_code[error.lineno - 1].lstrip()]
+                        line_num = match_compile[compiled_code[error.lineno - 1].lstrip()]
                     else:
-                        l_num = match_compile[compiled_code[int(lineno) - 1].lstrip()]
+                        line_num = match_compile[compiled_code[int(lineno) - 1].lstrip()]
                 except KeyError:
                     if not lineno:
-                        l_num = match_compile[compiled_code[error.lineno - 1]]
+                        line_num = match_compile[compiled_code[error.lineno - 1]]
                     else:
-                        l_num = match_compile[compiled_code[int(lineno) - 1]]
+                        line_num = match_compile[compiled_code[int(lineno) - 1]]
         except Exception:
-            return "Неизвестно", "???"
-        line = code[l_num]
-        return l_num + 1, line
+            return "Неизвестная строка", "???"
+        line_text = code[line_num]
+        return line_num + 1, line_text
 
     # Красивая обработка всех ошибок
 
@@ -249,7 +253,8 @@ def process_exception(e, compiled_code=None, match_compile=None, code=()):
         if msg == "unexpected indent" or msg == "expected an indented block":
             msg = 'неправильный отступ'
         return f'Ошибка в строке номер {l_num}:\n  {line} ' \
-               f'\nВ этой строке допущена синтаксическая ошибка.' + (f'\nПодробнее: {msg}' if msg != "invalid syntax" else "")
+               f'\nВ этой строке допущена синтаксическая ошибка.' + (
+            f'\nПодробнее: {msg}' if msg != "invalid syntax" else "")
     elif isinstance(e, ArithmeticError):
         l_num, line = get_line()
 

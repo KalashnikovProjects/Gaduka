@@ -19,8 +19,8 @@ PROHIBITION_WORDS = ('eval', "exec", "PIL", "os", "sys", "Image", 'exit', "impor
 
 TYPES = {"list": "список", "str": "строка", "int": "число", "bool": "логический тип",
          "frozenset": "Неизменяемое множество",
-            "dict": "словарь", "tuple": "неизменяемый список", "set": "множество",
-            "function": "функция", "float": "Десятичная дробь", "NoneType": 'ничего'}
+         "dict": "словарь", "tuple": "неизменяемый список", "set": "множество",
+         "function": "функция", "float": "Десятичная дробь", "NoneType": 'ничего'}
 
 WORDS_FOR_REPLACE = {
     "или": "or",
@@ -272,7 +272,6 @@ class ToPythonCommands:
     @staticmethod
     def list_extend(kwargs):
         return f'{kwargs["список"]}.extend({kwargs["элементы"]})'
-
 
     # Устаревшие варианты
     # @staticmethod
@@ -573,12 +572,11 @@ def compile_line(line, line_num=0):
         raise CompileStringError(f"Ошибка в строке номер {line_num}: \n{line} \n"
                                  f"В Гадюке, в отличии от многих других языков, не нужно ставить ';' в конце строки.")
 
-
     for i in WORDS_FOR_REPLACE.items():
         line = super_replace(line, i[0], i[1])
 
     # Возвращает ту же строчку, но на python
-    sussy_baka = "   ".join(re.findall(r"""f".*\{.*?}.*"|f'.*\{.*?}.*'""", line)) # Проверка с f строками
+    sussy_baka = "   ".join(re.findall(r"""f".*\{.*?}.*"|f'.*\{.*?}.*'""", line))  # Проверка с f строками
     structure_finder = re.sub(r"""".*?"|'.*?'""", 'text', line)
 
     # заменяет строки в кавычках на text,
@@ -593,7 +591,6 @@ def compile_line(line, line_num=0):
                                        f"Некоторые названия нельзя использовать в своей программе:\n" +
                                        ", ".join(PROHIBITION_WORDS) + "\n"
                                                                       f"В вашей программе используется название '{i}'.")
-
 
     if re.fullmatch("повтор .+ раз:", structure_finder):
         """ 
@@ -632,7 +629,7 @@ def compile_line(line, line_num=0):
     elif re.fullmatch("(?:[\w\[\].]*\.)*\w+\(.*\)", structure_finder):
         """
         Не реазлизовано
-        вызывание функции у переменной
+        вызов функции у переменной
         например
         список.добавить(123)
         print()

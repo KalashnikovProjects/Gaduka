@@ -1,8 +1,8 @@
 from gaduka_engine import starter
 
 
-from flask import Flask, request, jsonify, abort
-from flask_restful import Resource, reqparse, abort, Api  # , Api
+from flask import request, jsonify
+from flask_restful import Resource
 
 
 def run_with_json_images_input(code, raw_img):
@@ -18,6 +18,7 @@ class GadukaRunCodeApi(Resource):
         args = request.get_json()
         args['images'] = [i.split(",")[1] for i in args['images']]
 
+        # API открытое, токен не нужен
         # if args["token"] not in config.REST_API_TOKENS:
         #     abort(403, message=f"Доступ к API без токена запрещён")
         result = run_with_json_images_input(args['code'], args['images'])
