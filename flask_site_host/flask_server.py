@@ -1,22 +1,22 @@
+from datetime import timedelta
 import base64
 import json
 import logging
-from datetime import timedelta
+import hashlib
+import hmac
+import config
+import retry
 
-from flask_restful import Api
 from flask import Flask, render_template, request, redirect
+from flask_restful import Api
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
+from sqlalchemy import update, select, delete
+
 from flask_site_host.forms.code_page import SaveProjectForm
 from flask_site_host.api_server import gaduka_api, database_api
 from flask_site_host.data import db_session
 from flask_site_host.data.projects import Projects
 from flask_site_host.data.users import User
-from sqlalchemy import update, select, delete
-
-import time
-import hashlib
-import hmac
-import config
 from flask_site_host.code_examples import EXAMPLES
 
 
@@ -33,6 +33,7 @@ api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
 api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
 api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
 api.add_resource(gaduka_api.GadukaRunCodeApi, "/api/v1/engine")
+
 
 @app.errorhandler(500)
 def server_error(error):
@@ -51,21 +52,16 @@ def bad_request(_):
 
 
 @login_manager.user_loader
+@retry.retry(tries=3, delay=2)
 def load_user(user_id):
-    for i in range(3):
-        try:
-            with db_session.create_session() as db_sess:
-                stmt = select(User).where(User.id == user_id)
-                user = db_sess.scalar(stmt)
-                return user
-        except Exception as e:
-            logging.warning(f"Ошибка при запросе в бд {e}, попытка {i + 1}/3")
-            time.sleep(3)
-    logging.error(f"База данных не отвечает")
-    raise
+    with db_session.create_session() as db_sess:
+        stmt = select(User).where(User.id == user_id)
+        user = db_sess.scalar(stmt)
+        return user
 
 
 @app.route('/logout')
+@retry.retry(tries=3, delay=2)
 def logout():
     if current_user.is_authenticated:
         logout_user()
@@ -74,11 +70,13 @@ def logout():
 
 @app.route('/')
 @app.route('/index')
+@retry.retry(tries=3, delay=2)
 def index():
     return render_template('index.html', title="Язык программирования Гадюка", examples=EXAMPLES)
 
 
 @app.route('/users/<username>')
+@retry.retry(tries=3, delay=2)
 def user_page(username):
     with db_session.create_session() as db_sess:
         stmt = select(User).where(User.username == username)
@@ -107,6 +105,7 @@ def check_user(user):
 
 
 @app.route('/login', methods=["GET", "POST"])
+@retry.retry(tries=3, delay=2)
 def login():
     if request.method == "GET":
         return render_template("login.html", title=f"Вход в аккаунт")
@@ -131,12 +130,13 @@ def login():
 
 
 @app.route('/login_error')
+@retry.retry(tries=3, delay=2)
 def login_error_page():
     return render_template('error_page.html', title="Ошибка при входе в аккаунт", error='Произошла ошибка при регистрации')
 
 
-@login_required
 @app.route('/run_code', methods=['GET', "POST"])
+@retry.retry(tries=3, delay=2)
 def run_code():
     form = SaveProjectForm()
     return render_template('code_page.html', title='Запуск кода', form=form)
@@ -144,6 +144,7 @@ def run_code():
 
 @app.route('/create_project', methods=['GET'])
 @login_required
+@retry.retry(tries=3, delay=2)
 def create_project():
     with db_session.create_session() as db_sess:
         project = Projects(
@@ -157,6 +158,7 @@ def create_project():
 
 
 @app.route('/projects/<int:project_id>', methods=['GET', "POST"])
+@retry.retry(tries=3, delay=2)
 def projects_page(project_id):
     form = SaveProjectForm()
     with db_session.create_session() as db_sess:
