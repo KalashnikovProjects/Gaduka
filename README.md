@@ -2,9 +2,9 @@
 
 ## - это язык программирования на русском языке, рассчитанный на учеников средней и старшей школы, представленный в виде сайта https://gaduka.sytes.net/ и документации https://gaduka-docs.readthedocs.io/
 
-![Main Page](https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-main.png)
+[<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-main.png" width="300"/>](flask_site_host/static/img/gaduka-main.png) 
 
-![Code](https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-code.png)
+[<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-code.png" width="300"/>](flask_site_host/static/img/gaduka-code.png) 
 
 В ветке main полностью автономная версия с базой данной **SQLite**, она используется только для теста.
 
@@ -21,3 +21,8 @@
 * Хостинг для [документации](https://gaduka-docs.readthedocs.io/) - https://readthedocs.org/
 
   >  Хостинги выбирались среди бесплатных, поэтому в этих ветках есть немало костылей для запуска кода в неподходящем для этого месте.
+
+### Для работы в зависимости от ветки могут понадобиться следующие переменные окружения:
+* `BOT_TOKEN` - токен телеграмм бота
+* `REST_API_TOKENS1` и `REST_API_TOKENS2` - токены для доступа к API базы данных, задаются на сервере базы данных этими же переменными окружения.
+* `MYSQL` - строка *MySQL*
