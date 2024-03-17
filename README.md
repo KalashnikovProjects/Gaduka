@@ -1,10 +1,10 @@
 # [<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/flask_site_host/static/img/gaduka-icon.png" width="50"/>](flask_site_host/static/img/gaduka-icon.png) Язык программирования «Гадюка»
 
-## - это язык программирования на русском языке, рассчитанный на учеников средней и старшей школы, представленный в виде сайта https://gaduka.sytes.net/ и документации https://gaduka-docs.readthedocs.io/
+ - это язык программирования на русском языке, рассчитанный на учеников средней и старшей школы, представленный в виде сайта https://gaduka.sytes.net/ и документации https://gaduka-docs.readthedocs.io/
 
-[<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-main.png" width="300"/>](flask_site_host/static/img/gaduka-main.png) 
+[<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-main.png" width="600"/>](flask_site_host/static/img/gaduka-main.png) 
 
-[<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-code.png" width="300"/>](flask_site_host/static/img/gaduka-code.png) 
+[<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-code.png" width="600"/>](flask_site_host/static/img/gaduka-code.png) 
 
 В ветке main полностью автономная версия с базой данной **SQLite**, она используется только для теста.
 
