@@ -1,4 +1,4 @@
-# [<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/flask_site_host/static/img/gaduka-icon.png" width="35"/>](flask_site_host/static/img/gaduka-icon.png) Язык программирования «Гадюка»
+# [<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/flask_site_host/static/img/gaduka-icon.png" width="50"/>](flask_site_host/static/img/gaduka-icon.png) Язык программирования «Гадюка»
 
 ## - это язык программирования на русском языке, рассчитанный на учеников средней и старшей школы, представленный в виде сайта https://gaduka.sytes.net/ и документации https://gaduka-docs.readthedocs.io/
 
