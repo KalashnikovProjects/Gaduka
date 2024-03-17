@@ -11,7 +11,9 @@ from flask_site_host.api_server import gaduka_api, database_api
 from flask_site_host.data import db_session
 from flask_site_host.data.projects import Projects
 from flask_site_host.data.users import User
+from sqlalchemy import update, select, delete
 
+import time
 import hashlib
 import hmac
 import config
@@ -32,7 +34,6 @@ api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
 api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
 api.add_resource(gaduka_api.GadukaRunCodeApi, "/api/v1/engine")
 
-
 @app.errorhandler(500)
 def server_error(error):
     logging.error(error)
@@ -51,9 +52,17 @@ def bad_request(_):
 
 @login_manager.user_loader
 def load_user(user_id):
-    with db_session.create_session() as db_sess:
-        a = db_sess.get(User, user_id)
-        return a
+    for i in range(3):
+        try:
+            with db_session.create_session() as db_sess:
+                stmt = select(User).where(User.id == user_id)
+                user = db_sess.scalar(stmt)
+                return user
+        except Exception as e:
+            logging.warning(f"Ошибка при запросе в бд {e}, попытка {i + 1}/3")
+            time.sleep(3)
+    logging.error(f"База данных не отвечает")
+    raise
 
 
 @app.route('/logout')
@@ -72,11 +81,13 @@ def index():
 @app.route('/users/<username>')
 def user_page(username):
     with db_session.create_session() as db_sess:
-        user = db_sess.query(User).filter(User.username == username).first()
-        user_id = user.id
-        projects = db_sess.query(Projects).filter(Projects.user_id == user_id).all()
+        stmt = select(User).where(User.username == username)
+        user = db_sess.scalar(stmt)
         if not user:
             return render_template("error_page.html", error='Такого профиля не существует', title='Такого профиля не существует')
+
+        stmt = select(Projects).where(Projects.user_id == user.id)
+        projects = db_sess.scalars(stmt).all()
 
         return render_template('user_page.html', user_page_name=username, title=f"Профиль {username}", projects=projects)
 
@@ -104,7 +115,8 @@ def login():
         return bad_request()
 
     with db_session.create_session() as db_sess:
-        user = db_sess.query(User).filter(User.id == user_data['id']).first()
+        stmt = select(User).where(User.id == user_data['id'])
+        user = db_sess.scalar(stmt)
         if not user:
             user = User(
                 id=user_data['id'],
@@ -149,25 +161,28 @@ def projects_page(project_id):
     form = SaveProjectForm()
     with db_session.create_session() as db_sess:
         if form.validate_on_submit():
-            project = db_sess.get(Projects, project_id)
+            stmt = select(Projects).where(Projects.id == project_id)
+            project = db_sess.scalar(stmt)
             if form.submit.data:
-                project.name = form.name.data
-                project.code = form.code.data
+                stmt = update(Projects).where(Projects.id == project.id).values(name=form.name.data, code=form.code.data)
                 if form.images.data:
                     form.images.data.stream.seek(0)
                     a = form.images.data.read()
                     img = str(base64.b64encode(a)).strip("b'")
                     # if check_image(a):
-                    project.img = img
+                    stmt = stmt.values(img=img)
+                db_sess.execute(stmt)
                 db_sess.commit()
                 return '', 204
 
             else:
-                db_sess.delete(project)
+                stmt = delete(Projects).where(Projects.id == project.id)
+                db_sess.execute(stmt)
                 db_sess.commit()
                 return redirect(f"/users/{current_user.username}")
 
-        project = db_sess.get(Projects, project_id)
+        stmt = select(Projects).where(Projects.id == project_id)
+        project = db_sess.scalar(stmt)
         if not project:
             return render_template("error_page.html", error="Такого проекта не существует")
 
@@ -180,6 +195,7 @@ def projects_page(project_id):
             template = 'project_page.html'
 
         return render_template(template, title=f'Гадюка проект {project.name}', form=form, author=author)
+
 
 
 def main():
