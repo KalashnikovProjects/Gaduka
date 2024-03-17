@@ -2,6 +2,8 @@
 
  - это язык программирования на русском языке, рассчитанный на учеников средней и старшей школы, представленный в виде сайта https://gaduka.sytes.net/ и документации https://gaduka-docs.readthedocs.io/
 
+  >  Когда начал делать этот проект был мал и глуп и намудрил с ветками и хостингами, всё что смог исправить позже подправил, но много нехорошего осталось.
+
 [<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-main.png" width="600"/>](flask_site_host/static/img/gaduka-main.png) 
 
 [<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-code.png" width="600"/>](flask_site_host/static/img/gaduka-code.png) 
