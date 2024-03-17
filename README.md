@@ -1,28 +1,28 @@
-Полностью автономная версия с базой данной **SQLite**, на захощеном сайте используется **MySQL**.
+# [<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/flask_site_host/static/img/gaduka-icon.png" width="50"/>](flask_site_host/static/img/gaduka-icon.png) Язык программирования «Гадюка»
 
-Используется только для проверки.
-____
+ - это язык программирования на русском языке, рассчитанный на учеников средней и старшей школы, представленный в виде сайта https://gaduka.sytes.net/ и документации https://gaduka-docs.readthedocs.io/
 
-Этот код будет работать полностью локально, но с ограничениями телеграмма:
+[<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-main.png" width="600"/>](flask_site_host/static/img/gaduka-main.png) 
 
-* При запуске кода будет telegram.error.Conflict
-из за того, что бот также запущен на хосте.
+[<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-code.png" width="600"/>](flask_site_host/static/img/gaduka-code.png) 
 
-* На сайте не будет работать кнопка регистрации (на локалхосте, на обычном будет)
+В ветке main полностью автономная версия с базой данной **SQLite**, она используется только для теста.
 
-Проблема связанна с тем, что [Telegram Login Widget](https://core.telegram.org/widgets/login)
-может работать только на 1 домене (https://gaduka.sytes.net/).
+### Сам проект сейчас использует 5 хостингов:
 
-На время проверки я могу перепривязать его к домену ngrok, это делается через BotFather.
+* [hosting/Glitch](https://github.com/KalashnikovProjects/WebProject/tree/hosting/Glitch) - Код из этой ветки хостится на glitch.com, обрабатывает API запросы на выполнение кода на Гадюке
 
-Для полноценного хоста проекта используется 3 ветки и 5 хостингов:
+* [hosting/Glitch-Гадюкабот](https://github.com/KalashnikovProjects/WebProject/tree/hosting/Glitch-%D0%93%D0%B0%D0%B4%D1%8E%D0%BA%D0%B0%D0%B1%D0%BE%D1%82) -  Хостится на Glitch, хостит tg бота (эту часть проекта делал [**estestvenno**](https://github.com/estestvenno))
 
-* [hosting/Glitch](https://github.com/KalashnikovProjects/WebProject/tree/hosting/Glitch) - хостинг Glitch, API запуска кода
+* [hosting/Render](https://github.com/KalashnikovProjects/WebProject/tree/hosting/Render) - хостинг Render, хостит основу сайта и API для работы с базой данных.
 
-* [hosting/Glitch-Гадюкабот](https://github.com/KalashnikovProjects/WebProject/tree/hosting/Glitch-%D0%93%D0%B0%D0%B4%D1%8E%D0%BA%D0%B0%D0%B1%D0%BE%D1%82) - хостинг Glitch, на нём работает ТГ бот
-
-* [hosting/Render](https://github.com/KalashnikovProjects/WebProject/tree/hosting/Render) - хостинг Render, весь основной Flask, API бд
-
-* Хостинг для базы данных MySQL (на 5 гб) - [Planet Scale](https://planetscale.com/), есть проблемы с работой в России
+* Хостинг для базы данных MySQL - сейчас это alwaysdata.com
 
 * Хостинг для [документации](https://gaduka-docs.readthedocs.io/) - https://readthedocs.org/
+
+  >  Хостинги выбирались среди бесплатных, поэтому в этих ветках есть немало костылей для запуска кода в неподходящем для этого месте.
+
+### Для работы в зависимости от ветки могут понадобиться следующие переменные окружения:
+* `BOT_TOKEN` - токен телеграмм бота
+* `REST_API_TOKENS1` и `REST_API_TOKENS2` - токены для доступа к API базы данных, задаются на сервере базы данных этими же переменными окружения.
+* `MYSQL` - строка *MySQL*
