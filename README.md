@@ -4,9 +4,9 @@
 
 Язык программирования на русском языке, рассчитанный на учеников средней и старшей школы, представленный в виде сайта https://gaduka.sytes.net/ и документации https://gaduka-docs.readthedocs.io/
 
-![Main Page](https://github.com/Prrromanssss/DAEE-fullstack/raw/main/gaduka-main.png)
+![Main Page](https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-main.png)
 
-![Code](https://github.com/Prrromanssss/DAEE-fullstack/raw/main/gaduka-code.png)
+![Code](https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-code.png)
 
 В ветке main полностью автономная версия с базой данной **SQLite**, она используется только для теста.
 
