@@ -1,3 +1,6 @@
+import retry
+from sqlalchemy import select
+
 import config
 from flask import jsonify
 from flask_restful import Resource, abort, reqparse
@@ -35,31 +38,32 @@ project_edit_only = ('name', 'code', 'img')
 project_create_only = ('name', 'code', 'img', "user_id")
 
 
-def abort_if_user_not_found(user_id: str):
-    session = db_session.create_session()
-    if user_id.isdigit():
-        user = session.get(User, user_id)
-    else:
-        user = session.query(User).filter(User.username == user_id).first()
-    if not user:
-        abort(404, message=f"Пользователь {user_id} не найден")
-    return session, user
+async def abort_if_user_not_found(user_id: str):
+    async with db_session.create_session() as session:
+        if user_id.isdigit():
+            user = await session.get(User, user_id)
+        else:
+            user = (await session.execute(
+                select(User).where(User.username == user_id)
+            )).scalar_one_or_none()
+        if not user:
+            abort(404, message=f"Пользователь {user_id} не найден")
+    return user
 
 
-def abort_if_project_not_found(project_id):
-    session = db_session.create_session()
-    project = session.get(Projects, project_id)
-    if not project:
-        abort(404, message=f"Проект {project_id} не найден")
-    return session, project
+async def abort_if_project_not_found(project_id):
+    async with db_session.create_session() as session:
+        project = await session.get(Projects, project_id)
+        if not project:
+            abort(404, message=f"Проект {project_id} не найден")
+    return project
 
 
-def abort_id_already_taken(user_id):
-    session = db_session.create_session()
-    user = session.get(User, user_id)
-    if user:
-        abort(404, message=f"Пользователь с id {user_id} уже существует")
-    session.close()
+async def abort_id_already_taken(user_id):
+    async with db_session.create_session() as session:
+        user = await session.get(User, user_id)
+        if user:
+            abort(404, message=f"Пользователь с id {user_id} уже существует")
 
 
 def abort_if_token_error(token):
@@ -68,82 +72,88 @@ def abort_if_token_error(token):
 
 
 class UsersResource(Resource):
-    def get(self, user_id):
-        _, user = abort_if_user_not_found(str(user_id))
+    @retry.retry(tries=3, delay=2)
+    async def get(self, user_id):
+        user = await abort_if_user_not_found(str(user_id))
         a = user.to_dict(only=user_only)
         a['projects'] = []
-        for i in user.projects:
+        async for i in user.projects:
             a['projects'].append(i.to_dict(only=("id", 'name', 'img')))
         return jsonify({"user": a})
 
-    def delete(self, user_id):
+    @retry.retry(tries=3, delay=2)
+    async def delete(self, user_id):
         args = delete_parser.parse_args()
         abort_if_token_error(args['token'])
-        session, user = abort_if_user_not_found(user_id)
-        session.delete(user)
-        session.commit()
+        async with db_session.create_session() as session:
+            user = await abort_if_user_not_found(user_id)
+            await session.delete(user)
+            await session.commit()
         return jsonify({"success": "OK"})
 
 
 class UsersListResource(Resource):
-    def post(self):
-        # id пользователя в базе данных совпадает с id пользователя telegram
+    @retry.retry(tries=3, delay=2)
+    async def post(self):
         args = create_user_parser.parse_args()
         abort_if_token_error(args['token'])
-        abort_id_already_taken(args["id"])
-        session = db_session.create_session()
-        kwa = {}
-        for i in user_only:
-            kwa[i] = args[i]
-        user = User(**kwa)
-        session.add(user)
-        session.commit()
-        session.close()
+        await abort_id_already_taken(args["id"])
+        async with db_session.create_session() as session:
+            kwa = {}
+            for i in user_only:
+                kwa[i] = args[i]
+            user = User(**kwa)
+            session.add(user)
+            await session.commit()
         return jsonify({"success": "OK"})
 
 
 class ProjectsResource(Resource):
-    def get(self, project_id):
-        _, project = abort_if_project_not_found(project_id)
+    @retry.retry(tries=3, delay=2)
+    async def get(self, project_id):
+        project = await abort_if_project_not_found(project_id)
         return jsonify({"project": project.to_dict(only=project_only)})
 
-    def delete(self, project_id):
+    @retry.retry(tries=3, delay=2)
+    async def delete(self, project_id):
         args = delete_parser.parse_args()
         abort_if_token_error(args['token'])
-        session, project = abort_if_project_not_found(project_id)
-        session.delete(project)
-        session.commit()
+        async with db_session.create_session() as session:
+            project = await abort_if_project_not_found(project_id)
+            await session.delete(project)
+            await session.commit()
         return jsonify({"success": "OK"})
 
-    def put(self, project_id):
-        session, project = abort_if_project_not_found(project_id)
+    @retry.retry(tries=3, delay=2)
+    async def put(self, project_id):
         args = edit_project_parser.parse_args()
         abort_if_token_error(args['token'])
-
-        for i in set(args.keys()) & set(project_edit_only):
-            project.__setattr__(i, args[i])
-
-        session.commit()
-        session.close()
+        async with db_session.create_session() as session:
+            project = await abort_if_project_not_found(project_id)
+            for i in set(args.keys()) & set(project_edit_only):
+                setattr(project, i, args[i])
+            await session.commit()
         return jsonify({"success": "OK"})
 
 
 class ProjectsListResource(Resource):
-    def get(self):
-        session = db_session.create_session()
-        projects = session.query(Projects).all()
-        return jsonify({'projects': [i.to_dict(only=project_only) for i in projects]})
+    @retry.retry(tries=3, delay=2)
+    async def get(self):
+        async with db_session.create_session() as session:
+            projects = (await session.execute(select(Projects))).scalars().all()
+            return jsonify({'projects': [i.to_dict(only=project_only) for i in projects]})
 
-    def post(self):
+    @retry.retry(tries=3, delay=2)
+    async def post(self):
         args = create_project_parser.parse_args()
         abort_if_token_error(args['token'])
-        session = db_session.create_session()
-        kwa = {}
-        for i in project_create_only:
-            kwa[i] = args[i]
-        project = Projects(**kwa)
-        session.add(project)
-        session.commit()
-        pr_id = session.query(User).get(args['user_id']).projects[-1].id
-        session.close()
+        async with db_session.create_session() as session:
+            kwa = {}
+            for i in project_create_only:
+                kwa[i] = args[i]
+            project = Projects(**kwa)
+            session.add(project)
+            await session.commit()
+            user = await session.get(User, args['user_id'])
+            pr_id = user.projects[-1].id
         return jsonify({"success": "OK", "project_id": pr_id})

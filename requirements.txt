@@ -11,3 +11,4 @@ flask-restful
 flask-login
 flask-wtf
 sqlalchemy-serializer
+retry
