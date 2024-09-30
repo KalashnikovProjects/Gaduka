@@ -231,7 +231,7 @@ class ToPythonFunctions:
         draw = ImageDraw.Draw(куда)
         font = ImageFont.truetype("Pillow/Tests/fonts/DejaVuSans.ttf", size=50)
         w, h = draw.textsize(текст, font=font)
-        place = [где[0] * куда.width - w // 2, где[1] * куда.height - h // 2]
+        place = [int(где[0] * куда.width - w // 2), int(где[1] * куда.height - h // 2)]
         draw.text(place, текст, fill=цвет, font=font)
 
     @staticmethod
@@ -239,22 +239,22 @@ class ToPythonFunctions:
         background = куда
         img = какую
         w, h = img.size
-        place = [где[0] * куда.width - w // 2, где[1] * куда.height - h // 2]
+        place = [int(где[0] * куда.width - w // 2), int(где[1] * куда.height - h // 2)]
         background.paste(img, place, img)
 
     @staticmethod
     def paste_line_to_image(куда, точки, цвет="black", ширина=2):
         draw = ImageDraw.Draw(куда)
-        li = [(i[0] * куда.width, i[1] * куда.height) for i in точки]
+        li = [(int(i[0] * куда.width), int(i[1] * куда.height)) for i in точки]
         draw.line(li, fill=цвет, width=ширина)
 
     @staticmethod
     def paste_circle_to_image(куда, центр, радиус, ширина_обводки=2, обводка=None, цвет=None):
         draw = ImageDraw.Draw(куда)
-        li = ((центр[0] - радиус) * куда.width,
-              (центр[1] - радиус) * куда.height,
-              (центр[0] + радиус) * куда.width,
-              (центр[1] + радиус) * куда.height)
+        li = (int((центр[0] - радиус) * куда.width),
+              int((центр[1] - радиус) * куда.height),
+              int((центр[0] + радиус) * куда.width),
+              int((центр[1] + радиус) * куда.height))
         if not цвет and not обводка:
             обводка = "black"
         draw.ellipse(li, width=ширина_обводки, fill=цвет, outline=обводка)
@@ -262,7 +262,7 @@ class ToPythonFunctions:
     @staticmethod
     def paste_shape_to_image(куда, углы, ширина_обводки=2, обводка=None, цвет=None):
         draw = ImageDraw.Draw(куда)
-        li = [(i[0] * куда.width, i[1] * куда.height) for i in углы]
+        li = [(int(i[0] * куда.width), int(i[1] * куда.height)) for i in углы]
         if not цвет and not обводка:
             обводка = "black"
         draw.polygon(li, fill=цвет, outline=обводка, width=ширина_обводки)
@@ -270,13 +270,13 @@ class ToPythonFunctions:
     @staticmethod
     def paste_rect_to_image(куда, где, высота, ширина, ширина_обводки=2, обводка=None, цвет=None):
         draw = ImageDraw.Draw(куда)
-        li = (где[0] * куда.width,
-              где[1] * куда.height,
-              (где[0] + ширина) * куда.width,
-              (где[1] + высота) * куда.height)
+        li = (int(где[0] * куда.width),
+              int(где[1] * куда.height),
+              int((где[0] + ширина) * куда.width),
+              int((где[1] + высота) * куда.height))
         if not цвет and not обводка:
             обводка = "black"
-        draw.rectangle(li, fill=цвет, outline=обводка, width=ширина_обводки)
+        draw.rectangle(li, width=int(ширина_обводки), outline=обводка, fill=цвет)
 
     """
     Функции обработки изображений
