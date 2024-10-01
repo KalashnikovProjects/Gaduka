@@ -204,7 +204,7 @@ class ToPythonFunctions:
                 result_imgs.append(i)
             else:
                 res_t.append(str(i))
-        result_text.append(''.join(res_t))
+        result_text.append(' '.join(res_t))
 
     @staticmethod
     def list_append(список, элемент):
