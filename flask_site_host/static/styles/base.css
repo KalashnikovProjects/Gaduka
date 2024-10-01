@@ -224,14 +224,9 @@ header {
     white-space: pre!important;
 }
 
-.examples-data div {
+.output {
     overflow: scroll;
     height: 80%;
-}
-
-.examples div.align-items-center {
-    height: 80%;
-    overflow: auto;
 }
 
 .examples-data div::-webkit-scrollbar-thumb {

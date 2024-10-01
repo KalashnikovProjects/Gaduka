@@ -3,6 +3,10 @@
 {% block content %}
 
 <script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/darcula.min.css">
 <div data-bs-theme="dark" class="text-white scroll-snap" id="index_div" >
     <section id='description' class="index-section container justify-content-center d-flex align-items-center">
         <div class="container g-3 py-5 row row-cols-auto justify-content-center content-section text-center p-5 mb-4 bg-body-tertiary rounded-3">
@@ -42,7 +46,7 @@
         <div class="d-flex align-items-start">
             <div class="nav nav-tabs flex-column examples-tabs" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                 {% for example in examples %}
-                <button class="btn btn-gray {% if loop.first %} active {% endif %}" data-bs-toggle="pill" data-bs-target="#example-{{ loop.index }}" type="button" role="tab" aria-controls="example-{{ loop.index }}" aria-selected="true">{{ example.name }}</button>
+                <a id="tab-btn-{{ loop.index }}" class="btn btn-gray {% if loop.first %} active {% endif %}" data-bs-toggle="pill" data-bs-target="#example-{{ loop.index }}" type="button" role="tab" aria-controls="example-{{ loop.index }}" aria-selected="true">{{ example.name }}</a>
                 {% endfor %}
             </div>
             <div class="flex-row container tab-content" id="v-pills-tabContent" style="margin-left: 35px; margin-top: 5px; height: 60vh">
@@ -51,9 +55,20 @@
                         <div class="examples-tab-div content-section row">
                         <div class="examples-data col-md-7">
                             <h4>Код на Гадюке</h4>
-                            <div class="output">
-                                <a>{{example.code}}</a>
-                            </div>
+                            <textarea id="example-code-{{ loop.index }}" style="max-height: 35vh">{{example.code}}</textarea>
+                                <script>
+                                    let editor_{{ loop.index }} = CodeMirror.fromTextArea(document.getElementById("example-code-{{ loop.index }}"), {
+                                        mode: "python",
+                                        indentUnit: 2,
+                                        indentWithTabs: false,
+                                        smartIndent: true,
+                                        theme: "darcula",
+                                        readOnly: true,
+                                    });
+                                    $(document).on('shown.bs.tab', 'a[data-bs-target="#example-{{ loop.index }}"]', function() {
+                                        this.refresh();
+                                    }.bind(editor_{{ loop.index }}))
+                                </script>
                     </div>
 
                     <div class="examples-data col-md-4">
@@ -130,5 +145,5 @@
         </div>
     </section>
 </div>
-<script src="{{ url_for('static', filename='scroll.js') }}"></script>
+<!-- <script src="{{ url_for('static', filename='scroll.js') }}"></script> -->
 {% endblock %}

@@ -4,6 +4,7 @@
 <script src="https://raw.githack.com/SortableJS/Sortable/master/Sortable.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/mode/overlay.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/darcula.min.css">
 <script src="{{ url_for('static', filename='code_page.js') }}"></script>
@@ -22,18 +23,19 @@
                 <style>
                     .CodeMirror  {
                         height: 400px;
+                        border-radius: 5px;
                     }
                 </style>
                 <script>
-                    let editor = CodeMirror.fromTextArea(document.getElementById("code_input"), {
-                        mode: "python",
-                        lineNumbers: true,
-                        indentUnit: 2,
-                        indentWithTabs: false,
-                        smartIndent: true,
-                        autofocus: true,
-                        theme: "darcula"
-                    });
+let editor = CodeMirror.fromTextArea(document.getElementById("code_input"), {
+  mode: "python",
+  lineNumbers: true,
+  indentUnit: 2,
+  indentWithTabs: false,
+  smartIndent: true,
+  autofocus: true,
+  theme: "darcula"
+});
                 </script>
                 {% for error in form.code.errors %}
                 <div class="alert alert-danger" role="alert">
