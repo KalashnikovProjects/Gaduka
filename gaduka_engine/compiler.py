@@ -1,3 +1,4 @@
+import math
 import random
 import re
 
@@ -140,7 +141,7 @@ def get_exec_funcs():
         "наименьшее": min,
         "случайное_число": random.randint,
         "случайный_элемент": random.choice,
-        "корень": pow,
+        "корень": math.sqrt,
         "округлить": round,
         "множество": set,
         "отсортировать": sorted,
