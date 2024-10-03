@@ -216,8 +216,8 @@ class ToPythonFunctions:
         список.remove(элемент)
 
     @staticmethod
-    def delete(список, номер):
-        список.pop(номер)
+    def delete(объект, номер):
+        объект.pop(номер)
 
     @staticmethod
     def list_extend(список, элементы):
