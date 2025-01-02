@@ -9,10 +9,11 @@ import time
 import traceback as tr
 from io import BytesIO
 from multiprocessing import Process, Queue
+
 from . import compiler
 from PIL import Image
 
-TIMEOUT_RUN_GADUKA = 10
+TIMEOUT_RUN_GADUKA = 5
 
 
 def run_from_api(code, images_json):
@@ -85,20 +86,19 @@ def compile_and_run_and_get_result(code, imgs, process_connect):
     pilimage = Image.Image
     Image.Image = compiler.GadukaImage
 
-    compiled_code, match_not_compile, result_imgs, result_text = "", {}, [], []
+    compiled_code, match_not_compile = "", {}
 
     try:
         compiled_code, match_not_compile = compiler.compile_code(code=code)
 
-        print(compiled_code)
         # print("\n".join(compiled_code))
-        result_imgs, result_text = [], []
-        exec("\n".join(compiled_code), {"итоговые_изображения": result_imgs, "итоговый_текст": result_text,
+        exec("\n".join(compiled_code), {"итоговые_изображения": compiler.result_imgs, "итоговый_текст": compiler.result_text,
                                         "изображения": imgs},
              compiler.get_exec_funcs())
-        result_text = "\n".join(result_text)
+
+        result_text = "\n".join(compiler.result_text)
         a = []
-        for i in result_imgs:
+        for i in compiler.result_imgs:
             i.__class__ = pilimage
             a.append(i.copy())
         result_imgs = a
@@ -140,8 +140,7 @@ def run_from_console(code, images=()):
         procc.join()
         return_queue.close()
 
-        print(
-            "\nОшибка! Похоже ваш код выполняется очень долго.\nВозможно проблема в цикле 'повтор пока'. \n Также такое может произойти при большом количестве изображений.")
+        print("\nОшибка! Похоже ваш код выполняется очень долго.\nВозможно проблема в цикле 'повтор пока'. \n Также такое может произойти при большом количестве изображений.")
         return
     result_imgs, result_text, compiled_code = ms
     for i in result_imgs:
@@ -171,33 +170,32 @@ def run_from_console(code, images=()):
 
 
 def process_exception(e, compiled_code=None, match_compile=None, code=()):
-    # raise e
-    # print(tr.format_exc())
+    #raise e
+    print(tr.format_exc())
 
     def get_line(lineno=None, text=None):
-        line_num = 0
         try:
             if text:
                 try:
-                    line_num = match_compile[text.lstrip()]
+                    l_num = match_compile[text.lstrip()]
                 except KeyError:
                     if not lineno:
-                        line_num = match_compile[text]
+                        l_num = match_compile[text]
             else:
                 try:
                     if not lineno:
-                        line_num = match_compile[compiled_code[error.lineno - 1].lstrip()]
+                        l_num = match_compile[compiled_code[error.lineno - 1].lstrip()]
                     else:
-                        line_num = match_compile[compiled_code[int(lineno) - 1].lstrip()]
+                        l_num = match_compile[compiled_code[int(lineno) - 1].lstrip()]
                 except KeyError:
                     if not lineno:
-                        line_num = match_compile[compiled_code[error.lineno - 1]]
+                        l_num = match_compile[compiled_code[error.lineno - 1]]
                     else:
-                        line_num = match_compile[compiled_code[int(lineno) - 1]]
+                        l_num = match_compile[compiled_code[int(lineno) - 1]]
         except Exception:
-            return "Неизвестная строка", "???"
-        line_text = code[line_num]
-        return line_num + 1, line_text
+            return "Неизвестно", "???"
+        line = code[l_num]
+        return l_num + 1, line
 
     # Красивая обработка всех ошибок
 
