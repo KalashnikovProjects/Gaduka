@@ -5,25 +5,22 @@ import sqlalchemy.orm as orm
 from sqlalchemy.orm import Session
 import sqlalchemy.ext.declarative as dec
 
+import config
+
 SqlAlchemyBase = dec.declarative_base()
 
 __factory = None
 
 
-def global_init(db_file):
+def global_init():
     global __factory
 
     if __factory:
         return
+    logging.info(f"Подключение к базе данных по адресу {config.MYSQL_CONNECT_STRING}")
 
-    if not db_file or not db_file.strip():
-        logging.fatal("Необходимо указать файл базы данных.")
-        raise Exception("Необходимо указать файл базы данных.")
-
-    conn_str = f'sqlite:///{db_file.strip()}?check_same_thread=False'
-    logging.info(f"Подключение к базе данных по адресу {conn_str}")
-
-    engine = sa.create_engine(conn_str, echo=False)
+    engine = sa.create_engine(config.MYSQL_CONNECT_STRING, echo=False, connect_args={'charset': 'utf8mb4'},
+                              pool_recycle=3600)
     __factory = orm.sessionmaker(bind=engine)
 
     from . import __all_models

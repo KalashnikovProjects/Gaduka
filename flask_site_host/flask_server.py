@@ -1,17 +1,17 @@
-from datetime import timedelta
 import base64
 import json
+import secrets
+import time
+from datetime import timedelta
 import logging
 import hashlib
 import hmac
 import config
+
 import retry
-
-from flask import Flask, render_template, request, redirect
 from flask_restful import Api
+from flask import Flask, render_template, request, redirect
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
-from sqlalchemy import update, select, delete
-
 from flask_site_host.forms.code_page import SaveProjectForm
 from flask_site_host.api_server import gaduka_api, database_api
 from flask_site_host.data import db_session
@@ -19,13 +19,12 @@ from flask_site_host.data.projects import Projects
 from flask_site_host.data.users import User
 from flask_site_host.code_examples import EXAMPLES
 
+from sqlalchemy import select, update, delete
 
 app = Flask(__name__)
 api = Api(app)
-app.config['SECRET_KEY'] = '/mops/delete/up/pack/super214jmi3rg4nsnfaqta/'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
-    days=3650
-)
+app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=3650)
 login_manager = LoginManager()
 login_manager.init_app(app)
 api.add_resource(database_api.UsersListResource, "/api/v1/users")
@@ -42,7 +41,7 @@ def server_error(error):
 
 
 @app.errorhandler(404)
-def not_found(error):
+def not_found(_):
     return render_template("error_page.html", error="Такой страницы не существует.")
 
 
@@ -199,14 +198,19 @@ def projects_page(project_id):
         return render_template(template, title=f'Гадюка проект {project.name}', form=form, author=author)
 
 
-
 def main():
-    if __name__ == "__main__":
-        db_session.global_init("db/main_gaduka.db")
-    else:
-        db_session.global_init("flask_site_host/db/main_gaduka.db")
-    logging.info("База данных подключена")
-    app.run(port=config.PORT, host='0.0.0.0')
+    attempt = 1
+    while True:
+        try:
+            db_session.global_init()
+        except Exception as e:
+            logging.warning(f"Ошибка при инициализации подключения к базе данных {e}, попытка {attempt}")
+            time.sleep(20)
+            attempt += 1
+        else:
+            logging.info("База данных подключена")
+            break
+    return app.run(port=config.PORT, host='0.0.0.0')
 
 
 if __name__ == '__main__':

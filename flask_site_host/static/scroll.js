@@ -14,16 +14,18 @@ document.addEventListener('wheel', function(e){
     if ($.scrollFlag) {
         return
     }
+    setTimeout(function(){
+        $.scrollFlag = false
+    }, 1250);
+
     $.scrollFlag = true
         if(e.deltaY / 120 > 0) {
             $("html,body").animate({ scrollTop: `+=${sectionHeight}px` }, 500, "easeInOutSine",
                 function() {
-                    $.scrollFlag = false
                 });
          }
         else{
             $("html,body").animate({ scrollTop: `-=${sectionHeight}px` }, 500, "easeInOutSine",
                 function() {
-                    $.scrollFlag = false
                 });}
 }, { passive: false })

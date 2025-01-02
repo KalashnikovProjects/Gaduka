@@ -26,7 +26,7 @@ async function run() {
         $('#preview-parent').children('div').each(function () {
             images.push($(this).children('img')[0].src)
         });
-        let newData = {"code": $("#code_input").val(),
+        let newData = {"code": editor.getValue(),
                         "images": images};
         $.ajax({
         type : "POST",
