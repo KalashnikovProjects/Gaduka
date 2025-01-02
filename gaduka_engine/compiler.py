@@ -228,9 +228,9 @@ class ToPythonFunctions:
     """
 
     @staticmethod
-    def paste_text_to_image(куда, где, текст, цвет="black"):
+    def paste_text_to_image(куда, где, текст, размер=50, цвет="black"):
         draw = ImageDraw.Draw(куда)
-        font = ImageFont.truetype("Pillow/Tests/fonts/DejaVuSans.ttf", size=50)
+        font = ImageFont.truetype("Pillow/Tests/fonts/DejaVuSans.ttf", size=размер)
         w, h = draw.textsize(текст, font=font)
         place = [int(где[0] * куда.width - w // 2), int(где[1] * куда.height - h // 2)]
         draw.text(place, текст, fill=цвет, font=font)
@@ -309,12 +309,13 @@ class ToPythonFunctions:
 
         if по_горизонтали:
             изображение = изображение.transpose(Image.FLIP_LEFT_RIGHT)
-        elif по_вертикали:
+        if по_вертикали:
             изображение = изображение.transpose(Image.FLIP_TOP_BOTTOM)
+
         return изображение
 
     @staticmethod
-    def image_effects(изображение, эффекты):
+    def image_effects(изображение, *эффекты):
         # изображение = эффекты(изображение, [])
 
         filters = {"блюр": ImageFilter.BLUR,
