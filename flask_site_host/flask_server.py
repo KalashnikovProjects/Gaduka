@@ -175,7 +175,6 @@ def projects_page(project_id):
                 db_sess.execute(stmt)
                 db_sess.commit()
                 return '', 204
-
             else:
                 stmt = delete(Projects).where(Projects.id == project.id)
                 db_sess.execute(stmt)
