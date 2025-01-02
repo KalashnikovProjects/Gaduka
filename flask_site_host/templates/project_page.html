@@ -43,20 +43,21 @@ let editor = CodeMirror.fromTextArea(document.getElementById("code_input"), {
                 </div>
                 {% endfor %}
             </div>
-            <div class="col-sm-6" style="max-height: 500px; overflow: auto">
+            <div class="col-sm-6" style="height: 500px; overflow: auto">
                 <h4 style="text-align: center">Результат</h4>
-                <div class="output"><a id="output" style="white-space: pre">...</a></div>
-
-                <div id="carouselExampleControls" class="carousel slide" data-ride="carousel" data-bs-interval="false"
-                     style="height: 400px">
-                <div class="carousel-inner" id="output_imgs">
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                </button>
+                <div class="result-all">
+                    <div class="output"><a id="output" style="white-space: pre">...</a></div>
+                    <div id="carouselExampleControls" class="carousel slide result-images-slide" data-ride="carousel" data-bs-interval="false"
+                             style="height: 399px">
+                        <div class="carousel-inner" id="output_imgs">
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

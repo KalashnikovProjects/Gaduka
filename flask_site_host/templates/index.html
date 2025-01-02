@@ -90,30 +90,41 @@
              style="padding-bottom: 0.5rem!important; padding-right: 0.5rem!important;">
         <h1 class="display-7 fw-bold" style="padding-top: 5px!important; text-align: center; margin-bottom: 10px; padding-left: 0!important; margin-left: -10px">Примеры кода на Гадюке</h1>
         <div class="align-items-center">
-            <ul class="nav nav-pills mb-3 examples-tabs" id="v-pills-tab" role="tablist" aria-orientation="horizontal">
+            <div class="nav nav-pills mb-3 examples-tabs" id="v-pills-tab" role="tablist" aria-orientation="horizontal">
                 {% for example in examples %}
-                    <li class="nav-item" role="presentation"><button class="btn btn-gray {% if loop.first %} active {% endif %}" data-bs-toggle="pill" data-bs-target="#example-{{ loop.index }}-l" type="button" role="tab" aria-controls="example-{{ loop.index }}-l" aria-selected="true">{{ example.name }}</button></li>
+                    <a id="tab-btn-{{ loop.index }}-l" class="btn btn-gray {% if loop.first %} active {% endif %}" data-bs-toggle="pill" data-bs-target="#example-{{ loop.index }}-l" type="button" role="tab" aria-controls="example-{{ loop.index }}-l" aria-selected="true">{{ example.name }}</a>
                 {% endfor %}
-            </ul >
-            <div class="tab-content" id="v-pills-tabContent" style="margin-left: 35px; margin-top: 5px; height: 60vh">
+            </div >
+            <div class="tab-content" id="v-pills-tabContent" style="margin-left: 35px; margin-top: 5px">
                 {% for example in examples %}
                     <div class="examples-tab-div-1 tab-pane fade {% if loop.first %} active show {% endif %}" id="example-{{ loop.index }}-l" role="tabpanel" aria-labelledby="example-{{ loop.index }}-l-tab">
                         <div class="examples-tab-div content-section row">
-                        <div class="examples-data col-md-7" style="max-width: 80vw">
+                        <div class="examples-data col-md-7" style="min-height: unset!important;margin-bottom: 5px;max-width: unset!important;">
                             <h4>Код на Гадюке</h4>
-                            <div class="output">
-                                <a>{{example.code}}</a>
-                            </div>
+                            <textarea id="example-code-{{ loop.index }}-l" style="max-height: 30vh">{{example.code}}</textarea>
+                                <script>
+                                    let editor_s_{{ loop.index }} = CodeMirror.fromTextArea(document.getElementById("example-code-{{ loop.index }}-l"), {
+                                        mode: "python",
+                                        indentUnit: 2,
+                                        indentWithTabs: false,
+                                        smartIndent: true,
+                                        theme: "darcula",
+                                        readOnly: true,
+                                    });
+                                    $(document).on('shown.bs.tab', 'a[data-bs-target="#example-{{ loop.index }}-l"]', function() {
+                                        this.refresh();
+                                    }.bind(editor_s_{{ loop.index }}))
+                                </script>
                     </div>
 
-                    <div class="examples-data col-md-4" style="max-width: 80vw">
+                    <div class="examples-data col-md-4" style="min-height: unset!important;margin-bottom: 10px;max-width: unset!important;">
                         <h4 style="text-align: center">Результат выполнения</h4>
-                        <div class="output" style="height: 80%">
+                        <div class="output">
                             <a {% if example.id == "4" %} style="white-space: normal!important;white-space: pre-line!important;" {% endif %}>{{ example.result }}</a>
                         </div>
                     </div>
                     </div>
-                    <a href="/projects/{{ example.id }}" type="button" class="btn btn-success btn-lg" style="height: 48px; width: 250px">Протестировать код</a>
+                    <a href="/projects/{{ example.id }}" type="button" class="btn btn-success btn-lg" style="margin-left: 8%; margin-bottom: 10px; height: 48px; width: 80%">Протестировать код</a>
                 </div>
                 {% endfor %}
             </div>

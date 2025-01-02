@@ -65,6 +65,11 @@ header {
      margin-top: 5px;
  }
 
+ .examples-tabs {
+     gap: 3px;
+     border: none!important;
+ }
+
 .btn-gray {
     background: #495057;
     --bs-btn-hover-bg: #3f4247;
@@ -121,6 +126,12 @@ header {
     color:white;
     border-radius: 5px;
     padding: 20px;
+}
+
+.result-all {
+    background-color: #495057!important;
+    border-radius: 5px;
+    height: 399px;
 }
 
 .inputcode{
@@ -198,11 +209,6 @@ header {
     display: none!important;
 }
 
-.examples-tab-div-1.show{
-    grid-gap: 16px!important;;
-    display: grid!important;
-}
-
 
 .examples-tab-div {
     grid-gap: 16px;
@@ -224,11 +230,6 @@ header {
     white-space: pre!important;
 }
 
-.output {
-    overflow: scroll;
-    height: 80%;
-}
-
 .examples-data div::-webkit-scrollbar-thumb {
     background-color: #3f4247;
 }
@@ -237,8 +238,13 @@ header {
     overflow-x: auto!important
 }
 
+.result-images-slide:not(:has(.carousel-item)) {
+    display: none!important;
+}
+
 .examples-data .output {
     max-height: 35vh;
+    padding: 10px 20px 20px;
 }
 
 #enjoy-gaduka .bg-body-tertiary {
@@ -262,14 +268,30 @@ header {
     min-height: 30vh!important;
 }
 
-@media (min-width: 771px) {#examples-small {display: none!important;}  }
+@media (min-width: 769px) {
+    #examples-small {display: none!important;}
+    .examples-tab-div-1.show{
+        grid-gap: 16px!important;;
+        display: grid!important;
+    }
+}
 
-@media (max-width: 770px) {
+@media (max-width: 768px) {
+
     #examples-big {display: none!important;}
 
     .examples .container {
         padding: 1rem!important;
     }
+
+    .examples .container.bg-body-tertiary {
+        height: unset!important;
+    }
+
+    .examples-tab-div-1.show{
+        display: block!important;
+    }
+
     .examples div h1{
         padding: 0!important;
         padding-bottom: 0.5rem!important;
