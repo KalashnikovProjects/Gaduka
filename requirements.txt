@@ -8,4 +8,5 @@ flask-login
 flask-wtf
 sqlalchemy-serializer
 retry
-psycopg2
+psycopg2-binary
+
