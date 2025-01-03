@@ -18,7 +18,7 @@
 Необходимо заполнить следующие переменные окружения (или просто заполнить template.env и переименовать в .env):
 * `BOT_TOKEN`, `TELEGRAM_BOT_NAME` - токен и ник телеграмм бота. Необходим для входа на сайте и работы телеграм бота, остальной функционал сайта будет работать.
 * `REST_API_TOKENS1` и `REST_API_TOKENS2` - токены для доступа к API базы данных (любые строки)
-* `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DATABASE` - данные для базы данных *MySQL* (любые строки без спец. символов)
+* `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DATABASE` - данные для базы данных *Postgres* (любые строки без спец. символов)
 
 После заполнения запустить с помощью `docker-compose up`, необходимо иметь запущенный [Docker](https://docker.com/). Сайт будет запущен на http://localhost.
 
