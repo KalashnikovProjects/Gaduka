@@ -1,11 +1,9 @@
-import logging
-
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy.orm import Session
 import sqlalchemy.ext.declarative as dec
 
-import config
+from .. import config
 
 SqlAlchemyBase = dec.declarative_base()
 
@@ -17,10 +15,8 @@ def global_init():
 
     if __factory:
         return
-    logging.info(f"Подключение к базе данных по адресу {config.MYSQL_CONNECT_STRING}")
 
-    engine = sa.create_engine(config.MYSQL_CONNECT_STRING, echo=False, connect_args={'charset': 'utf8mb4'},
-                              pool_recycle=3600)
+    engine = sa.create_engine(config.POSTGRES_CONNECT_STRING, echo=False, pool_pre_ping=True, pool_recycle=3600)
     __factory = orm.sessionmaker(bind=engine)
 
     from . import __all_models

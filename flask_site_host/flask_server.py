@@ -6,20 +6,20 @@ from datetime import timedelta
 import logging
 import hashlib
 import hmac
-import config
 
 import retry
 from flask_restful import Api
 from flask import Flask, render_template, request, redirect
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
-from flask_site_host.forms.code_page import SaveProjectForm
-from flask_site_host.api_server import gaduka_api, database_api
-from flask_site_host.data import db_session
-from flask_site_host.data.projects import Projects
-from flask_site_host.data.users import User
-from flask_site_host.code_examples import EXAMPLES
-
 from sqlalchemy import select, update, delete
+
+from .forms.code_page import SaveProjectForm
+from .api_server import database_api
+from .data import db_session
+from .data.projects import Projects
+from .data.users import User
+from .code_examples import EXAMPLES
+from . import config
 
 app = Flask(__name__)
 api = Api(app)
@@ -31,7 +31,6 @@ api.add_resource(database_api.UsersListResource, "/api/v1/users")
 api.add_resource(database_api.UsersResource, "/api/v1/users/<int:user_id>")
 api.add_resource(database_api.ProjectsListResource, "/api/v1/projects")
 api.add_resource(database_api.ProjectsResource, "/api/v1/projects/<int:project_id>")
-api.add_resource(gaduka_api.GadukaRunCodeApi, "/api/v1/engine")
 
 
 @app.errorhandler(500)
@@ -103,11 +102,15 @@ def check_user(user):
     return hmac.new(secret_key, data_string, hashlib.sha256).hexdigest() == user['hash']
 
 
-@app.route('/login', methods=["GET", "POST"])
+@app.route('/login', methods=["GET"])
 @retry.retry(tries=3, delay=2)
-def login():
-    if request.method == "GET":
-        return render_template("login.html", title=f"Вход в аккаунт")
+def login_page():
+    return render_template("login.html", title=f"Вход в аккаунт", telegram_bot_name=config.TELEGRAM_BOT_NAME)
+
+
+@app.route('/login', methods=["POST"])
+@retry.retry(tries=3, delay=2)
+def login_post():
     user_data = request.json
     if not check_user(user_data):
         return bad_request()
@@ -138,7 +141,7 @@ def login_error_page():
 @retry.retry(tries=3, delay=2)
 def run_code():
     form = SaveProjectForm()
-    return render_template('code_page.html', title='Запуск кода', form=form)
+    return render_template('code_page.html', title='Запуск кода', code_run_api_url=config.CODE_RUN_API, form=form)
 
 
 @app.route('/create_project', methods=['GET'])
@@ -194,7 +197,7 @@ def projects_page(project_id):
         else:
             template = 'project_page.html'
 
-        return render_template(template, title=f'Гадюка проект {project.name}', form=form, author=author)
+        return render_template(template, title=f'Гадюка проект {project.name}', code_run_api_url=config.CODE_RUN_API, form=form, author=author)
 
 
 def main():
@@ -209,7 +212,7 @@ def main():
         else:
             logging.info("База данных подключена")
             break
-    return app.run(port=config.PORT, host='0.0.0.0')
+    return app.run(port=config.FLASK_SERVER_PORT, host='0.0.0.0')
 
 
 if __name__ == '__main__':

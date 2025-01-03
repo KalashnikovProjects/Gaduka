@@ -1,8 +1,8 @@
 import base64
-from telegram import InputFile
+from telegram import InputFile, Update
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, MessageHandler, filters
-from config import BOT_TOKEN, REST_API_TOKENS, CODE_RUN_API, DIAMOND_GOOSE
+from .config import BOT_TOKEN, REST_API_TOKENS, CODE_RUN_API, MAIN_API
 import requests
 import datetime
 
@@ -24,7 +24,7 @@ async def start(update, context):
     encoded_content = base64.b64encode(response.content)
 
     # Создание аккаунта для юзера
-    requests.post(f'{DIAMOND_GOOSE}/api/v1/users', json={'id': user.id, 'username': user.first_name,
+    requests.post(f'{MAIN_API}/api/v1/users', json={'id': user.id, 'username': user.first_name,
                                                          'auth_date': str(datetime.date.today()),
                                                          'token': REST_API_TOKENS[0],
                                                          'photo_url': encoded_content.decode('utf-8')})
@@ -113,7 +113,7 @@ async def profile_command(update, context):
     context.user_data['current_code'] = ''
 
     # Получение списка проектов пользователя
-    response = requests.get(f'{DIAMOND_GOOSE}/api/v1/users/{user.id}').json()
+    response = requests.get(f'{MAIN_API}/api/v1/users/{user.id}').json()
     result_list = response["user"]["projects"]
 
     # Получение аватарки пользователя
@@ -183,8 +183,8 @@ async def create_saving_command(update, context):
     user = update.effective_user
 
     # Получение данных пользователя для отправки на сервер
-    source = requests.get(f'{DIAMOND_GOOSE}/api/v1/projects/{update.callback_query.data.split()[1]}').json()
-    print(requests.put(f'{DIAMOND_GOOSE}/api/v1/projects/{update.callback_query.data.split()[1]}',
+    source = requests.get(f'{MAIN_API}/api/v1/projects/{update.callback_query.data.split()[1]}').json()
+    print(requests.put(f'{MAIN_API}/api/v1/projects/{update.callback_query.data.split()[1]}',
                        json={'code': context.user_data['current_code'],
                              'token': REST_API_TOKENS[0],
                              'name': source['project']['name'],
@@ -211,13 +211,13 @@ async def run_command(update, context):
     user = update.effective_user
 
     # Создание кода
-    current_code = "#***Место для вашего кода***"
+    current_code = "`Место для вашего кода`"
 
     # Проверка открыт ли проект или же это свободный запуск
     if list_of_states[user.id] == 'Transition_to_editing':
 
         # Получение информации о проекте
-        response = requests.get(f"{DIAMOND_GOOSE}/api/v1/projects/{update.callback_query.data.split()[1]}").json()
+        response = requests.get(f"{MAIN_API}/api/v1/projects/{update.callback_query.data.split()[1]}").json()
 
         # Создание состояния редактирования проекта
         list_of_states[user.id] = f'filling_out_the_project {update.callback_query.data.split()[1]}'
@@ -278,7 +278,7 @@ async def run_command(update, context):
 async def deletion_command(update, context):
     user = update.effective_user
 
-    requests.delete(f'{DIAMOND_GOOSE}/api/v1/projects/{update.callback_query.data.split()[1]}',
+    requests.delete(f'{MAIN_API}/api/v1/projects/{update.callback_query.data.split()[1]}',
                     json={'token': REST_API_TOKENS[0]}).json()
 
     # Перевод состояния юзера в неактивный режим(не заполняет проект, не создает новый проект)
@@ -385,7 +385,7 @@ async def text_echo(update, context):
 
                         # Проверка был ли в создаваемом проекте код
                         if context.user_data['current_code']:
-                            requests.post(f'{DIAMOND_GOOSE}/api/v1/projects',
+                            requests.post(f'{MAIN_API}/api/v1/projects',
                                           json={'user_id': user.id,
                                                 'name': message.caption,
                                                 'token': REST_API_TOKENS[0],
@@ -395,7 +395,7 @@ async def text_echo(update, context):
                             # Обнуление кода
                             context.user_data['current_code'] = ''
                         else:
-                            requests.post(f'{DIAMOND_GOOSE}/api/v1/projects',
+                            requests.post(f'{MAIN_API}/api/v1/projects',
                                           json={'user_id': user.id,
                                                 'name': message.caption,
                                                 'token': REST_API_TOKENS[0],
@@ -431,7 +431,7 @@ async def text_echo(update, context):
                     # Обработка сообщения без фото
                     if context.user_data['current_code']:
                         # Сохранение в случае если в проекте есть код
-                        requests.post(f'{DIAMOND_GOOSE}/api/v1/projects',
+                        requests.post(f'{MAIN_API}/api/v1/projects',
                                       json={'user_id': user.id,
                                             'name': message.text,
                                             'token': REST_API_TOKENS[0],
@@ -440,7 +440,7 @@ async def text_echo(update, context):
                         context.user_data['current_code'] = ''
                     else:
                         # Если кода нет
-                        requests.post(f'{DIAMOND_GOOSE}/api/v1/projects',
+                        requests.post(f'{MAIN_API}/api/v1/projects',
                                       json={'user_id': user.id,
                                             'name': message.text,
                                             'token': REST_API_TOKENS[0]})
@@ -515,7 +515,7 @@ async def text_echo(update, context):
                 url = file.file_path
                 response = requests.get(url)
                 encoded_content = base64.b64encode(response.content)
-                response = requests.post(f'{CODE_RUN_API}api/v1/engine',
+                response = requests.post(f'{CODE_RUN_API}/api/v1/engine',
                                          json={"code": context.user_data['current_code'],
                                                "images":
                                                    ['data:image/png;base64,' + encoded_content.decode('utf-8')]}).json()
@@ -551,7 +551,7 @@ async def text_echo(update, context):
 
 
 async def launch_without_photos(update, context):
-    response = requests.post(f'{CODE_RUN_API}api/v1/engine',
+    response = requests.post(f'{CODE_RUN_API}/api/v1/engine',
                              json={"code": context.user_data['current_code'],
                                    "images": []}).json()
     await update.effective_message.reply_text(f'Итог работы вашего кода:\n{response["result_text"]}')
@@ -605,7 +605,7 @@ def main():
     application.add_handler(CommandHandler("profile", profile_command))
     application.add_handler(CommandHandler("create", create_command))
     application.add_handler(MessageHandler(filters.ALL, text_echo))
-    application.run_polling()
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 # Словарь состояний конкретного пользователя

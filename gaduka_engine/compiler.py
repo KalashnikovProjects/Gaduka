@@ -2,8 +2,7 @@ import math
 import random
 import re
 
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, PngImagePlugin
-from PIL.PngImagePlugin import PngImageFile
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 """
 Для определения типа строки (выполнение функции, задание значения переменной, запуск цикла и т.д.)

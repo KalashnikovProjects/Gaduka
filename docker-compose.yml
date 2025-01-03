@@ -1,0 +1,80 @@
+services:
+  nginx:
+    image: kalashnik/gaduka-nginx:latest
+    build:
+      context: .nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - engine-server
+      - flask-server
+
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost" ]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+      start_interval: 5s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    hostname: postgres
+    env_file:
+      - .env
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+  flask-server:
+    hostname: flask-server
+    image: kalashnik/gaduka-flask-server:latest
+    build:
+      dockerfile: flask_site_host/Dockerfile
+      context: /
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: "postgres:5432"
+      CODE_RUN_API: "http://localhost"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  engine-server:
+    hostname: engine-server
+    image: kalashnik/gaduka-engine-server:latest
+    build:
+      dockerfile: gaduka_engine/Dockerfile
+      context: /
+    env_file:
+      - .env
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+
+  tg-bot:
+    hostname: tg-bot
+    image: kalashnik/gaduka-tg-bot:latest
+    build:
+      dockerfile: tg_bot/Dockerfile
+      context: /
+    environment:
+      CODE_RUN_API: "http://engine-server:8081"
+      MAIN_API: "http://flask-server:8080"
+    env_file:
+      - .env
+    depends_on:
+      - engine-server
+      - flask-server
+    restart: unless-stopped
+
+
+volumes:
+  postgres:

@@ -30,7 +30,7 @@ async function run() {
                         "images": images};
         $.ajax({
         type : "POST",
-        url : "http://127.0.0.1:80/api/v1/engine",
+        url : CODE_RUN_API_RUL + "/api/v1/engine",
         data: JSON.stringify(newData),
         dataType:"json",
         crossDomain: true,

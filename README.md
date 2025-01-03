@@ -1,30 +1,30 @@
 # [<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/flask_site_host/static/img/gaduka-icon.png" width="50"/>](flask_site_host/static/img/gaduka-icon.png) Язык программирования «Гадюка»
 
- - это язык программирования на русском языке, рассчитанный на учеников средней и старшей школы, представленный в виде сайта https://gaduka.sytes.net/ и документации https://gaduka-docs.readthedocs.io/
+ - это язык программирования на русском языке для начинающих, представленный в виде сайта https://gaduka.sytes.net/ и документации https://gaduka-docs.readthedocs.io/
 
-[<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-main.png" width="600"/>](flask_site_host/static/img/gaduka-main.png) 
+<img src="images/gaduka-main.png" width=600 alt="top rams section screenshot"/>
+<img src="images/code-page.png" width=600 alt="gaduka project page screenshot"/>
 
-[<img src="https://github.com/KalashnikovProjects/Gaduka/raw/main/gaduka-code.png" width="600"/>](flask_site_host/static/img/gaduka-code.png) 
 
-В ветке main полностью автономная версия с базой данной **SQLite**, она используется только для теста.
+### Разделение на микросервисы
 
-  >  Когда начал делать этот проект был мал и глуп и намудрил с ветками и хостингами, всё что смог исправить позже подправил, но много нехорошего осталось.
+* **flask-server** - сайт, вся работа с базой данных, rest api
+* **engine-server** - api, который запускает код на Гадюке
+* **postgres** - база данных
+* **nginx** - маршрутизация запросов между flask-server и engine-server
+* **tg_bot** - телеграм бот Гадюки, имеет тот-же функционал, что и сайт, разработан полностью [estestvenno](https://github.com/estestvenno).
 
-### Сам проект сейчас использует 5 хостингов:
+### Инструкция для запуска
+Необходимо заполнить следующие переменные окружения (или просто заполнить template.env и переименовать в .env):
+* `BOT_TOKEN`, `TELEGRAM_BOT_NAME` - токен и ник телеграмм бота. Необходим для входа на сайте и работы телеграм бота, остальной функционал сайта будет работать.
+* `REST_API_TOKENS1` и `REST_API_TOKENS2` - токены для доступа к API базы данных (любые строки)
+* `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DATABASE` - данные для базы данных *MySQL* (любые строки без спец. символов)
 
-* [hosting/Glitch](https://github.com/KalashnikovProjects/WebProject/tree/hosting/Glitch) - Код из этой ветки хостится на glitch.com, обрабатывает API запросы на выполнение кода на Гадюке
+После заполнения запустить с помощью `docker-compose up`, необходимо иметь запущенный [Docker](https://docker.com/). Сайт будет запущен на http://localhost.
 
-* [hosting/Glitch-Гадюкабот](https://github.com/KalashnikovProjects/WebProject/tree/hosting/Glitch-%D0%93%D0%B0%D0%B4%D1%8E%D0%BA%D0%B0%D0%B1%D0%BE%D1%82) -  Хостится на Glitch, хостит tg бота (эту часть проекта делал [**estestvenno**](https://github.com/estestvenno))
+> Для работы виджета входа через telegram необходимо также в BotFather прописать [/setdomain](https://core.telegram.org/widgets/login#:~:text=Once%20you%20have%20chosen%20a%20bot%2C%20send%20the%20/setdomain%20command%20to%20%40Botfather%20to%20link%20your%20website%27s%20domain%20to%20the%20bot.%20Then%20configure%20your%20widget%20below%20and%20embed%20the%20code%20on%20your%20website.) 
+для бота, чей токен используется. localhost не подойдёт в качестве домена, для получения временного домена можно использовать [ngrok](https://ngrok.com/).
 
-* [hosting/Render](https://github.com/KalashnikovProjects/WebProject/tree/hosting/Render) - хостинг Render, хостит основу сайта и API для работы с базой данных.
+Если вы хотите запустить модифицированную версию, или просто собрать docker образы сами, то `docker-compose up --build`
 
-* Хостинг для базы данных MySQL - сейчас это alwaysdata.com
-
-* Хостинг для [документации](https://gaduka-docs.readthedocs.io/) - https://readthedocs.org/
-
-  >  Хостинги выбирались среди бесплатных, поэтому в этих ветках есть немало костылей для запуска кода в неподходящем для этого месте.
-
-### Для работы в зависимости от ветки могут понадобиться следующие переменные окружения:
-* `BOT_TOKEN` - токен телеграмм бота
-* `REST_API_TOKENS1` и `REST_API_TOKENS2` - токены для доступа к API базы данных, задаются на сервере базы данных этими же переменными окружения.
-* `MYSQL` - строка *MySQL*
+Если при первом запуске выдаёт ошибку с базой данных, тогда перезапустите flask-server `docker-compose restart flask-server`
