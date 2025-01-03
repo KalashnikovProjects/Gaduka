@@ -1,12 +1,12 @@
 import retry
 from sqlalchemy import select
+
+import config
 from flask import jsonify
 from flask_restful import Resource, abort, reqparse
-
-from .. import config
-from ..data import db_session
-from ..data.users import User
-from ..data.projects import Projects
+from flask_site_host.data import db_session
+from flask_site_host.data.users import User
+from flask_site_host.data.projects import Projects
 
 create_user_parser = reqparse.RequestParser()
 create_user_parser.add_argument('token', required=True)
