@@ -4,7 +4,7 @@ import sqlalchemy
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.dialects.postgresql import TEXT, INTEGER, BIGINT
 
-from .. import config
+import config
 from .db_session import SqlAlchemyBase
 
 
