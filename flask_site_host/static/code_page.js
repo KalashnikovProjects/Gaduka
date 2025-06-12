@@ -30,7 +30,7 @@ async function run() {
                         "images": images};
         $.ajax({
         type : "POST",
-        url : "https://gaduka.glitch.me/api/v1/engine",
+        url : "http://v2608893.hosted-by-vdsina.ru:8089/api/v1/engine",
         data: JSON.stringify(newData),
         dataType:"json",
         crossDomain: true,
